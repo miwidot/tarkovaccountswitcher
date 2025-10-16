@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tarkov Account Switcher</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+      color: #e0e0e0;
+      padding: 20px;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #252525;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #00b894;
+      font-size: 28px;
+      text-shadow: 0 2px 10px rgba(0, 184, 148, 0.3);
+    }
+
+    .add-section {
+      background: #2d2d2d;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 1px solid #3a3a3a;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #b0b0b0;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 5px;
+      color: #e0e0e0;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #00b894;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #00b894;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #00a885;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 184, 148, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-danger {
+      background: #d63031;
+      padding: 8px 15px;
+      font-size: 13px;
+      margin-left: 10px;
+    }
+
+    .btn-danger:hover {
+      background: #c72828;
+      box-shadow: 0 4px 12px rgba(214, 48, 49, 0.4);
+    }
+
+    .btn-switch {
+      background: #0984e3;
+    }
+
+    .btn-switch:hover {
+      background: #0770c9;
+      box-shadow: 0 4px 12px rgba(9, 132, 227, 0.4);
+    }
+
+    .accounts-list {
+      margin-top: 20px;
+    }
+
+    .account-item {
+      background: #2d2d2d;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #3a3a3a;
+      transition: all 0.3s;
+    }
+
+    .account-item:hover {
+      border-color: #00b894;
+      box-shadow: 0 4px 12px rgba(0, 184, 148, 0.2);
+    }
+
+    .account-info {
+      flex: 1;
+    }
+
+    .account-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: #00b894;
+      margin-bottom: 5px;
+    }
+
+    .account-email {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .account-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .status-message {
+      padding: 12px;
+      border-radius: 5px;
+      margin: 15px 0;
+      text-align: center;
+      display: none;
+      position: sticky;
+      top: 10px;
+      z-index: 1000;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .status-success {
+      background: rgba(0, 184, 148, 0.2);
+      border: 1px solid #00b894;
+      color: #00b894;
+    }
+
+    .status-error {
+      background: rgba(214, 48, 49, 0.2);
+      border: 1px solid #d63031;
+      color: #d63031;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    /* Tab System */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #3a3a3a;
+      padding-bottom: 0;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      color: #888;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      font-weight: 500;
+    }
+
+    .tab:hover {
+      background: transparent;
+      color: #00b894;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .tab.active {
+      color: #00b894;
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #00b894;
+      box-shadow: 0 0 10px rgba(0, 184, 148, 0.5);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Tarkov Account Switcher</h1>
+
+    <div id="statusMessage" class="status-message"></div>
+
+    <!-- Tab Navigation -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('accounts')" data-i18n="tabAccounts">📋 Accounts</button>
+      <button class="tab" onclick="switchTab('add')" data-i18n="tabAdd">➕ Hinzufügen</button>
+      <button class="tab" onclick="switchTab('settings')" data-i18n="tabSettings">⚙️ Einstellungen</button>
+    </div>
+
+    <!-- Accounts Tab -->
+    <div id="accounts-tab" class="tab-content active">
+      <div class="accounts-list">
+        <div id="accountsList"></div>
+      </div>
+    </div>
+
+    <!-- Add Account Tab -->
+    <div id="add-tab" class="tab-content">
+      <div class="add-section" style="margin-bottom: 0;">
+        <h3 style="margin-bottom: 15px; color: #e0e0e0;" data-i18n="addAccountTitle">Neuen Account hinzufügen</h3>
+        <div class="form-group">
+          <label data-i18n="labelAccountName">Account Name (z.B. "Main", "Alt")</label>
+          <input type="text" id="accountName" data-i18n-placeholder="placeholderAccountName" placeholder="Main Account">
+        </div>
+        <div class="form-group">
+          <label data-i18n="labelEmail">Email</label>
+          <input type="email" id="accountEmail" data-i18n-placeholder="placeholderEmail" placeholder="your@email.com">
+        </div>
+        <p style="color: #888; font-size: 13px; margin: 15px 0;" data-i18n-html="addAccountHelp">
+          Nach dem Hinzufügen startet der Launcher automatisch.<br>
+          Logge dich ein - die Session wird automatisch gespeichert! ✅
+        </p>
+        <button onclick="addAccount()" data-i18n="btnAddAccount">Account hinzufügen & Launcher starten</button>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+      <div class="add-section" style="margin-bottom: 0;">
+        <h3 style="margin-bottom: 15px; color: #e0e0e0;" data-i18n="settingsTitle">⚙️ Einstellungen</h3>
+
+        <!-- Language Selector -->
+        <div class="form-group">
+          <label data-i18n="labelLanguage">Sprache / Language</label>
+          <select id="language" onchange="changeLanguage()" style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #3a3a3a; border-radius: 5px; color: #e0e0e0; font-size: 14px; cursor: pointer;">
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+
+        <!-- Launcher Path -->
+        <div class="form-group" style="margin-top: 20px;">
+          <label data-i18n="labelLauncherPath">Launcher Pfad</label>
+          <input type="text" id="launcherPath" data-i18n-placeholder="placeholderLauncherPath" placeholder="C:\Battlestate Games\BsgLauncher\BsgLauncher.exe">
+        </div>
+        <button onclick="saveLauncherPath()" data-i18n="btnSave">Speichern</button>
+        <button onclick="browseLauncherPath()" data-i18n="btnBrowse" style="margin-left: 10px; background: #636e72;">Durchsuchen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

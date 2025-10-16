@@ -1,0 +1,53 @@
+# Node modules
+node_modules/
+package-lock.json
+
+# Build directories
+build*/
+dist/
+release*/
+v*/
+v[0-9]*/
+v[0-9].[0-9]*/
+v[0-9].[0-9].[0-9]*/
+RELEASE*/
+
+# Packaged apps
+*.zip
+*.tar.gz
+*.dmg
+*.pkg
+*.deb
+*.rpm
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+*.cache
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Screenshots (except icon)
+*.png
+!icon.png
+
+# Claude Code
+.claude/
