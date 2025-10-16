@@ -47,6 +47,21 @@ Multi-account switcher for **Escape from Tarkov** with automatic session managem
 3. Click **"Switch"**
 4. Launcher starts automatically **already logged in**! 🚀
 
+## 📸 Screenshots
+
+<div align="center">
+
+### Accounts Overview
+![Accounts Tab](demo1.png)
+
+### Add New Account
+![Add Account Tab](demo2.png)
+
+### Settings
+![Settings Tab](demo3.png)
+
+</div>
+
 ## 🔒 Security & Privacy
 
 ### What the Tool Does:

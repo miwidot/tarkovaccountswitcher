@@ -45,9 +45,10 @@ tmp/
 temp/
 *.tmp
 
-# Screenshots (except icon)
+# Screenshots (except icon and demos)
 *.png
 !icon.png
+!demo*.png
 
 # Claude Code
 .claude/
