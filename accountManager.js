@@ -172,8 +172,14 @@ class AccountManager {
         return { success: false, error: 'Wrong account logged in (expected: ' + account.email + ', got: ' + launcherSettings.login + ')' };
       }
 
-      // Store the entire launcher settings
-      account.launcherSession = launcherSettings;
+      // Create clean copy without system-specific paths
+      // This prevents issues when user runs app from different directories
+      const cleanedSession = { ...launcherSettings };
+      delete cleanedSession.tempFolder;  // System-specific, don't save
+      delete cleanedSession.gamesRootDir;  // System-specific, don't save
+
+      // Store the cleaned launcher settings
+      account.launcherSession = cleanedSession;
       account.sessionCaptured = new Date().toISOString();
 
       fs.writeFileSync(this.accountsFile, JSON.stringify(accounts, null, 2));
@@ -188,7 +194,7 @@ class AccountManager {
     try {
       const launcherSettingsPath = path.join(process.env.APPDATA, 'Battlestate Games', 'BsgLauncher', 'settings');
 
-      // Read existing settings first (if they exist) to preserve system-specific paths
+      // Read existing settings first to preserve system-specific paths (tempFolder, gamesRootDir)
       let existingSettings = {};
       if (fs.existsSync(launcherSettingsPath)) {
         try {
@@ -199,13 +205,10 @@ class AccountManager {
         }
       }
 
-      // Merge: keep existing paths/system settings, but overwrite with saved session data
+      // Merge: saved session overwrites most settings, but preserve system paths from existing
       const mergedSettings = {
-        ...existingSettings,  // Existing settings (paths, etc.)
-        ...launcherSession,   // Saved session data (tokens, email, etc.)
-        // Don't overwrite system-specific paths
-        tempFolder: existingSettings.tempFolder || launcherSession.tempFolder,
-        gamesRootDir: existingSettings.gamesRootDir || launcherSession.gamesRootDir
+        ...existingSettings,     // Start with existing (includes system paths)
+        ...launcherSession       // Overwrite with saved session (excludes system paths since we don't save them)
       };
 
       fs.writeFileSync(launcherSettingsPath, JSON.stringify(mergedSettings, null, 2));
