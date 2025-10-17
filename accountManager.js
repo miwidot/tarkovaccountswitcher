@@ -12,9 +12,11 @@ class AccountManager {
     this.accountsFile = path.join(this.dataPath, 'accounts.json');
     this.settingsFile = path.join(this.dataPath, 'settings.json');
     this.keyFile = path.join(this.dataPath, '.key');
+    this.tempFolder = path.join(this.dataPath, 'temp');  // Our own temp folder
     this.launcherSettingsPath = path.join(process.env.APPDATA, 'Battlestate Games', 'BsgLauncher', 'settings');
 
     this.ensureDataDir();
+    this.ensureTempDir();
     this.encryptionKey = this.getOrCreateKey();
 
     this.sessionWatcher = null;
@@ -29,6 +31,12 @@ class AccountManager {
   ensureDataDir() {
     if (!fs.existsSync(this.dataPath)) {
       fs.mkdirSync(this.dataPath, { recursive: true });
+    }
+  }
+
+  ensureTempDir() {
+    if (!fs.existsSync(this.tempFolder)) {
+      fs.mkdirSync(this.tempFolder, { recursive: true });
     }
   }
 
@@ -172,14 +180,14 @@ class AccountManager {
         return { success: false, error: 'Wrong account logged in (expected: ' + account.email + ', got: ' + launcherSettings.login + ')' };
       }
 
-      // Create clean copy without system-specific paths
-      // This prevents issues when user runs app from different directories
-      const cleanedSession = { ...launcherSettings };
-      delete cleanedSession.tempFolder;  // System-specific, don't save
-      delete cleanedSession.gamesRootDir;  // System-specific, don't save
+      // Save session with our own temp folder path
+      // This ensures launcher always uses our controlled temp directory
+      const sessionToSave = { ...launcherSettings };
+      sessionToSave.tempFolder = this.tempFolder;
+      // Keep gamesRootDir if it exists, otherwise launcher will use default
 
-      // Store the cleaned launcher settings
-      account.launcherSession = cleanedSession;
+      // Store the launcher settings
+      account.launcherSession = sessionToSave;
       account.sessionCaptured = new Date().toISOString();
 
       fs.writeFileSync(this.accountsFile, JSON.stringify(accounts, null, 2));
@@ -194,7 +202,7 @@ class AccountManager {
     try {
       const launcherSettingsPath = path.join(process.env.APPDATA, 'Battlestate Games', 'BsgLauncher', 'settings');
 
-      // Read existing settings first to preserve system-specific paths (tempFolder, gamesRootDir)
+      // Read existing settings to preserve gamesRootDir if it exists
       let existingSettings = {};
       if (fs.existsSync(launcherSettingsPath)) {
         try {
@@ -205,10 +213,11 @@ class AccountManager {
         }
       }
 
-      // Merge: saved session overwrites most settings, but preserve system paths from existing
+      // Restore session and ALWAYS use our temp folder
       const mergedSettings = {
-        ...existingSettings,     // Start with existing (includes system paths)
-        ...launcherSession       // Overwrite with saved session (excludes system paths since we don't save them)
+        ...existingSettings,     // Preserve existing gamesRootDir if any
+        ...launcherSession,      // Restore saved session
+        tempFolder: this.tempFolder  // ALWAYS use our own temp folder
       };
 
       fs.writeFileSync(launcherSettingsPath, JSON.stringify(mergedSettings, null, 2));
@@ -236,6 +245,7 @@ class AccountManager {
           settings.login = email;
           settings.saveLogin = true;
           settings.keepLoggedIn = false;
+          settings.tempFolder = this.tempFolder;  // Use our temp folder
 
           // CRITICAL: Delete session tokens to force fresh login
           delete settings.at;
@@ -253,6 +263,7 @@ class AccountManager {
           login: email,
           saveLogin: true,
           keepLoggedIn: false,
+          tempFolder: this.tempFolder,  // Use our temp folder
           language: 'en',
           settingsVersion: 2
         };
