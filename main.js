@@ -1,9 +1,10 @@
 const { app, BrowserWindow, ipcMain, dialog, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 const AccountManager = require('./accountManager');
+const { version } = require('./package.json');
 
 // Set process title for Task Manager
-process.title = 'Tarkov Account Switcher';
+process.title = `Tarkov Account Switcher v${version}`;
 
 let mainWindow;
 let tray = null;
@@ -48,7 +49,7 @@ function createTray() {
     }
   ]);
 
-  tray.setToolTip('Tarkov Account Switcher');
+  tray.setToolTip(`Tarkov Account Switcher v${version}`);
   tray.setContextMenu(contextMenu);
 
   // Single click to show window
@@ -70,7 +71,7 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 700,
-    title: 'Tarkov Account Switcher',
+    title: `Tarkov Account Switcher v${version}`,
     icon: iconPath,
     webPreferences: {
       nodeIntegration: true,
@@ -87,7 +88,7 @@ function createWindow() {
 
   // Set process name for Task Manager
   if (process.platform === 'win32') {
-    app.setAppUserModelId('Tarkov Account Switcher');
+    app.setAppUserModelId(`Tarkov Account Switcher v${version}`);
   }
 
   // Prevent window from closing, just hide it
