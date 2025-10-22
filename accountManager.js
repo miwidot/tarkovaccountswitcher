@@ -202,25 +202,26 @@ class AccountManager {
     try {
       const launcherSettingsPath = path.join(process.env.APPDATA, 'Battlestate Games', 'BsgLauncher', 'settings');
 
-      // Read existing settings to preserve gamesRootDir if it exists
-      let existingSettings = {};
+      // Read existing settings ONLY to preserve gamesRootDir if it exists
+      let existingGamesRootDir = null;
       if (fs.existsSync(launcherSettingsPath)) {
         try {
-          existingSettings = JSON.parse(fs.readFileSync(launcherSettingsPath, 'utf8'));
+          const existingSettings = JSON.parse(fs.readFileSync(launcherSettingsPath, 'utf8'));
+          existingGamesRootDir = existingSettings.gamesRootDir;
         } catch (err) {
-          // If file is corrupt, start fresh
-          existingSettings = {};
+          // If file is corrupt, ignore
         }
       }
 
-      // Restore session and ALWAYS use our temp folder
-      const mergedSettings = {
-        ...existingSettings,     // Preserve existing gamesRootDir if any
-        ...launcherSession,      // Restore saved session
+      // Use ONLY our saved session, don't merge with existing settings
+      // This prevents conflicts with old/expired tokens in launcher settings
+      const settingsToWrite = {
+        ...launcherSession,      // Our complete saved session
+        gamesRootDir: existingGamesRootDir || launcherSession.gamesRootDir,  // Preserve gamesRootDir if exists
         tempFolder: this.tempFolder  // ALWAYS use our own temp folder
       };
 
-      fs.writeFileSync(launcherSettingsPath, JSON.stringify(mergedSettings, null, 2));
+      fs.writeFileSync(launcherSettingsPath, JSON.stringify(settingsToWrite, null, 2));
 
       return { success: true };
     } catch (error) {
