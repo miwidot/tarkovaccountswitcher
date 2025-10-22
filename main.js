@@ -83,6 +83,11 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
 
+  // Set title after HTML loads (to override HTML <title> tag)
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.setTitle(`Tarkov Account Switcher v${version}`);
+  });
+
   // Give AccountManager access to mainWindow for sending events
   accountManager.setMainWindow(mainWindow);
 
