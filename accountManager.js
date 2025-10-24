@@ -380,8 +380,50 @@ class AccountManager {
     }
   }
 
+  async saveCurrentAccountSession() {
+    try {
+      const launcherSettingsPath = path.join(process.env.APPDATA, 'Battlestate Games', 'BsgLauncher', 'settings');
+
+      if (!fs.existsSync(launcherSettingsPath)) {
+        return; // No settings file, nothing to save
+      }
+
+      const launcherSettings = JSON.parse(fs.readFileSync(launcherSettingsPath, 'utf8'));
+
+      // Check if there's a logged in user with valid tokens
+      if (!launcherSettings.login || !launcherSettings.at || !launcherSettings.rt) {
+        return; // No active session
+      }
+
+      // Find which of our accounts matches this email
+      const accounts = this.getAccounts();
+      const currentAccount = accounts.find(acc => acc.email === launcherSettings.login);
+
+      if (!currentAccount) {
+        return; // Not one of our accounts
+      }
+
+      // Save the current session (with potentially refreshed tokens)
+      const sessionToSave = { ...launcherSettings };
+      sessionToSave.tempFolder = this.tempFolder;
+
+      currentAccount.launcherSession = sessionToSave;
+      currentAccount.sessionCaptured = new Date().toISOString();
+
+      fs.writeFileSync(this.accountsFile, JSON.stringify(accounts, null, 2));
+
+      console.log(`✅ Saved current session for ${currentAccount.name} (${currentAccount.email}) before switching`);
+    } catch (error) {
+      console.error('Error saving current account session:', error);
+      // Don't fail the switch if this fails
+    }
+  }
+
   async switchAccount(account) {
     try {
+      // 0. BEFORE switching, save current account's session to capture any refreshed tokens
+      await this.saveCurrentAccountSession();
+
       // 1. Kill launcher
       await this.killLauncher();
 
