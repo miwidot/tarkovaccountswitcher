@@ -1,0 +1,96 @@
+====================================================================
+  TARKOV ACCOUNT SWITCHER - INSTALLATION
+====================================================================
+
+SYSTEM ANFORDERUNGEN:
+---------------------
+- Windows 10 oder Windows 11 (64-bit)
+- Visual C++ Redistributables 2015-2022
+- ~200MB freier Speicherplatz
+
+
+INSTALLATION:
+-------------
+1. ZIP-Datei komplett entpacken in einen beliebigen Ordner
+2. Ordner "Tarkov Account Switcher-win32-x64" öffnen
+3. "Tarkov Account Switcher.exe" starten
+
+
+WINDOWS SMARTSCREEN WARNUNG UMGEHEN:
+-------------------------------------
+
+Die App ist nicht signiert (Code Signing kostet ~300€/Jahr), daher
+zeigt Windows SmartScreen eine Warnung an oder blockiert die App.
+
+WICHTIG: Die App ist sicher! Der Quellcode ist öffentlich auf GitHub:
+https://github.com/miwidot/tarkovaccountswitcher
+
+
+METHODE 1 - Bei "Diese App wurde aus Sicherheitsgründen blockiert":
+--------------------------------------------------------------------
+1. Rechtsklick auf "Tarkov Account Switcher.exe"
+2. "Eigenschaften" auswählen
+3. Unten bei "Sicherheit" das Häkchen bei "Zulassen" setzen
+4. "OK" klicken
+5. App normal per Doppelklick starten
+
+
+METHODE 2 - Bei "Windows hat den Start dieser nicht erkannten App verhindert":
+-------------------------------------------------------------------------------
+1. Auf "Weitere Informationen" klicken
+2. Auf "Trotzdem ausführen" klicken
+3. App startet normal
+
+
+METHODE 3 - SmartScreen komplett ausschalten (nicht empfohlen):
+----------------------------------------------------------------
+1. Windows Einstellungen öffnen (Win + I)
+2. "Datenschutz & Sicherheit" → "Windows-Sicherheit"
+3. "App- & Browsersteuerung" öffnen
+4. Unter "Zuverlässigkeitsbasierter Schutz" auf "Einstellungen" klicken
+5. "Apps und Dateien überprüfen" auf "Aus" stellen
+
+ACHTUNG: Dies deaktiviert SmartScreen für ALLE Apps, nicht nur diese!
+
+
+FEHLERBEHEBUNG:
+---------------
+
+Problem: App startet nicht, kein Fenster erscheint
+Lösung 1: "check-requirements.bat" ausführen um System zu prüfen
+Lösung 2: Visual C++ Redistributables installieren:
+          https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+Problem: "VCRUNTIME140.dll fehlt" Fehler
+Lösung: Visual C++ Redistributables installieren (siehe oben)
+
+Problem: Antivirus blockiert die App
+Lösung: Ausnahme für "Tarkov Account Switcher.exe" hinzufügen
+
+
+ERSTE SCHRITTE NACH INSTALLATION:
+----------------------------------
+1. App starten
+2. Zum "Accounts" Tab wechseln
+3. "Account hinzufügen" klicken
+4. Name und E-Mail eingeben
+5. Im Tarkov Launcher einloggen
+6. "Session erfassen" klicken
+7. Wiederholen für alle Accounts
+
+
+WICHTIG - ERSTE NUTZUNG:
+-------------------------
+- Nach dem ersten Update auf v1.3.5 müssen alle Accounts EINMAL
+  neu eingeloggt und die Session erfasst werden
+- Danach bleiben die Accounts dauerhaft eingeloggt beim Switchen
+
+
+SUPPORT:
+--------
+- GitHub Issues: https://github.com/miwidot/tarkovaccountswitcher/issues
+- Bei Problemen bitte "check-requirements.bat" ausführen und
+  das Log "requirements-check.log" mit anhängen
+
+
+====================================================================
