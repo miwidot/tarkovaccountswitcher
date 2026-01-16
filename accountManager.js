@@ -202,23 +202,31 @@ class AccountManager {
     try {
       const launcherSettingsPath = path.join(process.env.APPDATA, 'Battlestate Games', 'BsgLauncher', 'settings');
 
-      // Read existing settings ONLY to preserve gamesRootDir if it exists
-      let existingGamesRootDir = null;
+      // Read existing launcher settings to preserve game state (selectedGame, games array, etc.)
+      let existingSettings = {};
       if (fs.existsSync(launcherSettingsPath)) {
         try {
-          const existingSettings = JSON.parse(fs.readFileSync(launcherSettingsPath, 'utf8'));
-          existingGamesRootDir = existingSettings.gamesRootDir;
+          existingSettings = JSON.parse(fs.readFileSync(launcherSettingsPath, 'utf8'));
         } catch (err) {
-          // If file is corrupt, ignore
+          // If file is corrupt, use saved session as base
+          existingSettings = { ...launcherSession };
         }
+      } else {
+        // No existing settings, use saved session as base
+        existingSettings = { ...launcherSession };
       }
 
-      // Use ONLY our saved session, don't merge with existing settings
-      // This prevents conflicts with old/expired tokens in launcher settings
+      // Only restore auth-related fields from saved session
+      // Preserve everything else (games, selectedGame, UI preferences) from current launcher state
       const settingsToWrite = {
-        ...launcherSession,      // Our complete saved session
-        gamesRootDir: existingGamesRootDir || launcherSession.gamesRootDir,  // Preserve gamesRootDir if exists
-        tempFolder: this.tempFolder  // ALWAYS use our own temp folder
+        ...existingSettings,                        // Keep current launcher state (games, selectedGame, etc.)
+        login: launcherSession.login,               // Restore account email
+        at: launcherSession.at,                     // Restore access token
+        rt: launcherSession.rt,                     // Restore refresh token
+        atet: launcherSession.atet,                 // Restore token expiry
+        keepLoggedIn: launcherSession.keepLoggedIn, // Restore login preference
+        saveLogin: launcherSession.saveLogin,       // Restore save login preference
+        tempFolder: this.tempFolder                 // ALWAYS use our own temp folder
       };
 
       fs.writeFileSync(launcherSettingsPath, JSON.stringify(settingsToWrite, null, 2));
