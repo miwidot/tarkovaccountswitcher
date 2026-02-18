@@ -6,11 +6,14 @@ package-lock.json
 build*/
 dist/
 release*/
-v*/
-v[0-9]*/
-v[0-9].[0-9]*/
-v[0-9].[0-9].[0-9]*/
 RELEASE*/
+
+# v2 Go rewrite - tracked
+!v2/
+# Ignore build artifacts in v2
+v2/*.exe
+v2/*.syso
+v2/build_output.txt
 
 # Packaged apps
 *.zip
