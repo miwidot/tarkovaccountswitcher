@@ -1,149 +1,110 @@
-# 🎮 Tarkov Account Switcher
+# Tarkov Account Switcher
 
-![Version](https://img.shields.io/badge/version-1.3.1-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0--beta.2-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 Multi-account switcher for **Escape from Tarkov** with automatic session management and encrypted storage.
 
-## ✨ Features
+## Features
 
-- ✅ **Automatic Session Management**: Saves login sessions encrypted locally
-- ✅ **One-Click Account Switching**: Launcher restarts automatically with selected account
-- ✅ **No Password Storage**: Only email + session tokens (AES-256 encrypted)
-- ✅ **Auto-Login**: Automatically logs in after first login
-- ✅ **Multi-Language**: German & English with automatic system language detection
-- ✅ **System Tray Integration**: Runs in background, auto-minimizes
-- ✅ **Single Instance**: Only one app instance can run
+- **Automatic Session Management** — Saves login sessions encrypted locally
+- **One-Click Account Switching** — Launcher restarts automatically with selected account
+- **No Password Storage** — Only email + session tokens (AES-256 encrypted)
+- **Auto-Login** — Automatically logs in after first login
+- **Update Notifications** — Checks GitHub Releases on startup, shows banner with download link
+- **Multi-Language** — German & English with automatic system language detection
+- **Streamer Mode** — Hides email addresses in the UI
+- **System Tray Integration** — Runs in background, auto-minimizes when launcher starts
+- **Single Instance** — Only one app instance can run
 
-## 📥 Download
+## Download
 
-**Latest Release: v1.3.1**
+[Latest Release](https://github.com/miwidot/tarkovaccountswitcher/releases/latest)
 
-📦 [Tarkov-Account-Switcher-v1.3.1.zip](https://github.com/miwidot/tarkov-account-switcher/releases/latest) (~108 MB)
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
-1. Download and extract `Tarkov-Account-Switcher-v1.3.1.zip`
-2. Run `Tarkov Account Switcher.exe`
+1. Download `Tarkov Account Switcher.exe` from the latest release
+2. Run the exe — no installation needed
 3. Done! App runs in system tray
 
 ### Adding Your First Account
 
-1. Open **"Add"** tab
-2. Enter **Account Name** + **Email** (e.g., "Main", "main@email.com")
+1. Open the **"Add"** tab
+2. Enter **Account Name** + **Email** (e.g. "Main", "main@email.com")
 3. Click **"Add Account & Start Launcher"**
 4. Launcher starts automatically
 5. **Log in normally in the launcher**
-6. Session is **automatically detected and saved** ✅
-7. Account now shows **green checkmark** ✅
+6. Session is **automatically detected and saved**
+7. Account now shows green checkmark
 
 ### Switching Accounts
 
-1. Open **"Accounts"** tab
-2. Select account
-3. Click **"Switch"**
-4. Launcher starts automatically **already logged in**! 🚀
+1. Open the **"Accounts"** tab
+2. Click **"Switch"** on the desired account
+3. Launcher restarts automatically — **already logged in**
 
-## 📸 Screenshots
+## Security & BSG Statement
 
-<div align="center">
+### What this tool does:
 
-### Accounts Overview
-![Accounts Tab](demo1.png)
+- Reads session tokens from BSG Launcher settings (`%APPDATA%\Battlestate Games\BsgLauncher\settings`)
+- Stores them encrypted (AES-256-CBC) locally in `%APPDATA%\TarkovAccountSwitcher\accounts.json`
+- On switch: Kills launcher process, replaces session data in launcher settings, restarts launcher
+- **No passwords are stored** — only email addresses and session tokens
 
-### Add New Account
-![Add Account Tab](demo2.png)
+### What this tool does NOT do:
 
-### Settings
-![Settings Tab](demo3.png)
+- **No game file modification** — No EFT or Arena files are read, written or patched
+- **No code injection** — No DLL injection, no memory manipulation, no hooking
+- **No anti-cheat interaction** — Does not touch BattlEye or any anti-cheat component
+- **No network manipulation** — No traffic interception, no proxy, no MITM
+- **No BSG server communication** — The tool never contacts BSG servers directly
+- **No cloud sync** — All data stays local on your machine
 
-</div>
+The tool exclusively operates on the **BSG Launcher's local settings file** to swap session tokens between accounts. This is comparable to manually copying and pasting the settings file.
 
-## 🔒 Security & Privacy
+### Privacy
 
-### What the Tool Does:
-- ✅ Reads session tokens from BSG Launcher Settings (`%APPDATA%\Battlestate Games\BsgLauncher\settings`)
-- ✅ Stores them encrypted (AES-256) locally in `%APPDATA%\TarkovAccountSwitcher\accounts.json`
-- ✅ On switch: Kill launcher → Replace session data → Restart launcher
-- ✅ **No password stored** - only email + session tokens
+- All data stays **local on your PC**
+- AES-256-CBC encryption with a unique key per installation
+- No telemetry, no analytics, no network calls (except the GitHub update check)
 
-### What the Tool Does NOT Do:
-- ❌ No game file modification
-- ❌ No injection/patching
-- ❌ No cloud synchronization
-- ❌ No network manipulation
+## Disclaimer
 
-### Privacy:
-- 🔐 All data stays **local on your PC**
-- 🔐 AES-256-CBC encryption
-- 🔐 Unique encryption key per installation
-- 🔐 No telemetry, no analytics
+**This tool does not modify any game files and performs no code injection.** It only reads and writes the BSG Launcher's local settings file to manage session tokens.
 
-## ⚠️ Disclaimer
-
-**Important - Please Read:**
-
-- This tool does **not modify game files** and performs **no code injection**
-- It only works with launcher session data (similar to TcNo Account Switcher)
-- **Current assessment**: Minimal risk
-- **BUT**: I give **no guarantee**. Use at **your own risk**!
-- If BSG changes their TOS in the future, the assessment may change
+- **Current assessment**: Minimal risk — similar to other account switchers (e.g. TcNo Account Switcher)
+- **No guarantee**: Use at **your own risk**. If BSG changes their Terms of Service, the assessment may change.
 
 **Recommendations:**
-- ✅ Enable 2FA on your BSG account
-- ✅ Backup important files before first use
-- ✅ Never share credentials with third parties
-- ✅ Use different passwords for different accounts
 
-## 🛠️ Tech Stack
+- Enable 2FA on your BSG account
+- Use different passwords for different accounts
+- Never share credentials with third parties
 
-- **Electron** - Cross-platform desktop framework
-- **Node.js** - Backend runtime
-- **AES-256-CBC** - Encryption
-- **Windows Process Management** - Launcher control
+## Tech Stack
 
-## 📋 Changelog
+- **Go** — Native Windows application
+- **lxn/walk** — Native Windows GUI (no Electron, no web views)
+- **AES-256-CBC** — Encryption via Go stdlib
+- **Windows API** — Process management and tray integration
 
-### v1.3.1 (Current)
-- 🌍 **Multi-Language Support**: German & English with automatic system language detection
-- 🐛 **Session Token Fix**: Tokens are now correctly deleted on account switch (prevents false session storage)
-- 🐛 **Path Merge Fix**: System-specific paths are not overwritten on session restore
-- ✅ Improved session management for more stable account switching
+## Building from Source
 
-### v1.3.0
-- ✅ ASAR packaging for cleaner file structure
-- ✅ Session watcher optimizations
+```bash
+cd v2
+go build -ldflags="-s -w -H windowsgui" -o "Tarkov Account Switcher.exe" .
+```
 
-### v1.2.0
-- ✅ Fully automatic session detection
-- ✅ No password storage (only session tokens)
-- ✅ System Tray integration
-- ✅ Single Instance Lock
-- ✅ Tab-based UI (Accounts / Add / Settings)
+Requires Go 1.21+ on Windows.
 
-[View full changelog →](./dc.md)
+## License
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Thanks to all beta testers!
-- Inspired by TcNo Account Switcher
-
-## ⚠️ Support
-
-**Beta Version Notice:**
-This is a beta version (v1.3.1). If you encounter issues or have feedback, please open an issue on GitHub!
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-**Made with ❤️ for the Tarkov community**
+**Made with care for the Tarkov community**
