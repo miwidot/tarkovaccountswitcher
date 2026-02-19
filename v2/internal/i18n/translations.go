@@ -61,6 +61,10 @@ const (
 	StatusSaveError      = "statusSaveError"
 	StatusEnterPath      = "statusEnterPath"
 	StatusLanguageSaved  = "statusLanguageSaved"
+
+	// Update Notifications
+	UpdateAvailableStable = "updateAvailableStable"
+	UpdateAvailableBeta   = "updateAvailableBeta"
 )
 
 var translations = map[string]map[string]string{
@@ -111,6 +115,10 @@ var translations = map[string]map[string]string{
 		StatusSaveError:      "Fehler beim Speichern",
 		StatusEnterPath:      "Bitte gib einen Pfad ein",
 		StatusLanguageSaved:  "Sprache gespeichert!",
+
+		// Update Notifications
+		UpdateAvailableStable: "Update verfügbar: {version} — {url}",
+		UpdateAvailableBeta:   "Neue Beta verfügbar: {version} — {url}",
 	},
 	"en": {
 		// Tabs
@@ -159,6 +167,10 @@ var translations = map[string]map[string]string{
 		StatusSaveError:      "Error saving",
 		StatusEnterPath:      "Please enter a path",
 		StatusLanguageSaved:  "Language saved!",
+
+		// Update Notifications
+		UpdateAvailableStable: "Update available: {version} — {url}",
+		UpdateAvailableBeta:   "Beta available: {version} — {url}",
 	},
 }
 

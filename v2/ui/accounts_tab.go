@@ -1,158 +1,220 @@
 package ui
 
 import (
-	"image/color"
+	"os/exec"
 
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/widget"
+	"github.com/lxn/walk"
 
 	"tarkov-account-switcher/internal/accounts"
 	"tarkov-account-switcher/internal/config"
 	"tarkov-account-switcher/internal/i18n"
 )
 
-var globalStatusLabel *widget.Label
+var (
+	accountsStatusLabel *walk.Label
+	updateBannerLbl     *walk.LinkLabel
+	pendingUpdateText   string
+)
 
-// CreateAccountsTab creates the accounts list tab
-func CreateAccountsTab() fyne.CanvasObject {
+func buildAccountsTab(page *walk.TabPage) {
+	rebuildAccountsTab(page)
+}
+
+func rebuildAccountsTab(page *walk.TabPage) {
+	clearTabPage(page)
+	if page.Layout() == nil {
+		page.SetLayout(walk.NewVBoxLayout())
+	}
+	accountsStatusLabel = nil
+	updateBannerLbl = nil
+
+	// Update banner (persists across rebuilds)
+	if pendingUpdateText != "" {
+		banner, _ := walk.NewLinkLabel(page)
+		banner.SetText(pendingUpdateText)
+		banner.SetFont(fontNormal)
+		banner.LinkActivated().Attach(func(link *walk.LinkLabelLink) {
+			exec.Command("rundll32", "url.dll,FileProtocolHandler", link.URL()).Start()
+		})
+		updateBannerLbl = banner
+	}
+
 	accs, err := accounts.GetAccounts()
 	if err != nil {
-		return widget.NewLabel("Error: " + err.Error())
+		lbl, _ := walk.NewLabel(page)
+		lbl.SetText("Error: " + err.Error())
+		lbl.SetFont(fontNormal)
+		return
 	}
 
-	// Status label
-	globalStatusLabel = widget.NewLabel("")
-	globalStatusLabel.Wrapping = fyne.TextWrapWord
-	globalStatusLabel.Alignment = fyne.TextAlignCenter
+	// Status label at top
+	statusLbl, _ := walk.NewLabel(page)
+	statusLbl.SetAlignment(walk.AlignHCenterVNear)
+	statusLbl.SetFont(fontNormal)
+	accountsStatusLabel = statusLbl
 
 	if len(accs) == 0 {
-		// Empty state
-		emptyIcon := canvas.NewText("📭", color.White)
-		emptyIcon.TextSize = 48
-		emptyIcon.Alignment = fyne.TextAlignCenter
+		walk.NewVSpacer(page)
 
-		emptyTitle := widget.NewLabelWithStyle(
-			i18n.T(i18n.EmptyStateTitle),
-			fyne.TextAlignCenter,
-			fyne.TextStyle{Bold: true},
-		)
-		emptySubtitle := widget.NewLabel(i18n.T(i18n.EmptyStateSubtitle))
-		emptySubtitle.Alignment = fyne.TextAlignCenter
+		emptyTitle, _ := walk.NewLabel(page)
+		emptyTitle.SetAlignment(walk.AlignHCenterVNear)
+		emptyTitle.SetText(i18n.T(i18n.EmptyStateTitle))
+		emptyTitle.SetFont(fontTitle)
 
-		return container.NewVBox(
-			globalStatusLabel,
-			layout.NewSpacer(),
-			container.NewCenter(emptyIcon),
-			container.NewCenter(emptyTitle),
-			container.NewCenter(emptySubtitle),
-			layout.NewSpacer(),
-		)
+		emptySub, _ := walk.NewLabel(page)
+		emptySub.SetAlignment(walk.AlignHCenterVNear)
+		emptySub.SetText(i18n.T(i18n.EmptyStateSubtitle))
+		emptySub.SetFont(fontNormal)
+
+		walk.NewVSpacer(page)
+		applyThemeToPage(page)
+		return
 	}
 
-	// Account cards
-	var cards []fyne.CanvasObject
+	// Scrollable area
+	scrollView, _ := walk.NewScrollView(page)
+	vl := walk.NewVBoxLayout()
+	vl.SetSpacing(8)
+	vl.SetMargins(walk.Margins{HNear: 4, VNear: 4, HFar: 4, VFar: 4})
+	scrollView.SetLayout(vl)
+
+	cardBg := walk.RGB(240, 240, 240)
+
 	for _, acc := range accs {
-		cards = append(cards, createAccountCard(acc))
+		createAccountCard(scrollView, acc, cardBg)
 	}
 
-	list := container.NewVBox(cards...)
-	scroll := container.NewVScroll(list)
-
-	return container.NewBorder(
-		container.NewVBox(globalStatusLabel, widget.NewSeparator()),
-		nil, nil, nil,
-		scroll,
-	)
+	walk.NewVSpacer(scrollView)
+	applyThemeToPage(page)
 }
 
-func createAccountCard(acc accounts.Account) fyne.CanvasObject {
-	// Avatar
-	initial := string([]rune(acc.Name)[0])
-	avatarText := canvas.NewText(initial, color.White)
-	avatarText.TextSize = 20
-	avatarText.TextStyle = fyne.TextStyle{Bold: true}
+func createAccountCard(parent walk.Container, acc accounts.Account, cardBg walk.Color) {
+	// Card with light gray background
+	card, _ := walk.NewComposite(parent)
+	hl := walk.NewHBoxLayout()
+	hl.SetMargins(walk.Margins{HNear: 14, VNear: 10, HFar: 14, VFar: 10})
+	hl.SetSpacing(12)
+	card.SetLayout(hl)
 
-	avatarBg := canvas.NewCircle(ColorPrimary)
-	avatar := container.NewStack(
-		container.NewCenter(container.NewPadded(container.NewPadded(avatarBg))),
-		container.NewCenter(avatarText),
-	)
-	avatar = container.NewPadded(avatar)
+	bg, _ := walk.NewSolidColorBrush(cardBg)
+	card.SetBackground(bg)
 
-	// Info
-	name := widget.NewLabelWithStyle(acc.Name, fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
-	email := widget.NewLabel(config.MaskEmail(acc.Email))
-	email.TextStyle = fyne.TextStyle{Italic: true}
+	// Info section (left)
+	infoComp, _ := walk.NewComposite(card)
+	infoVL := walk.NewVBoxLayout()
+	infoVL.SetMargins(walk.Margins{})
+	infoVL.SetSpacing(2)
+	infoComp.SetLayout(infoVL)
+	infoComp.SetBackground(bg)
 
-	var status *widget.Label
+	nameLbl, _ := walk.NewLabel(infoComp)
+	nameLbl.SetText(acc.Name)
+	nameLbl.SetFont(fontBold)
+
+	emailLbl, _ := walk.NewLabel(infoComp)
+	emailLbl.SetText(config.MaskEmail(acc.Email))
+	emailLbl.SetFont(fontSmall)
+
+	statusLbl, _ := walk.NewLabel(infoComp)
+	statusLbl.SetFont(fontSmall)
 	if acc.HasSession() {
-		status = widget.NewLabel("✅ " + i18n.T(i18n.StatusAutoLogin))
+		statusLbl.SetText("✅ " + i18n.T(i18n.StatusAutoLogin))
 	} else {
-		status = widget.NewLabel("⚠️ " + i18n.T(i18n.StatusLoginReq))
+		statusLbl.SetText("⚠ " + i18n.T(i18n.StatusLoginReq))
 	}
 
-	info := container.NewVBox(name, email, status)
+	// Spacer pushes buttons right
+	walk.NewHSpacer(card)
 
-	// Buttons - compact
-	switchBtn := widget.NewButton("▶", func() {
-		onSwitch(acc)
+	// Buttons (right)
+	btnComp, _ := walk.NewComposite(card)
+	btnVL := walk.NewVBoxLayout()
+	btnVL.SetMargins(walk.Margins{})
+	btnVL.SetSpacing(6)
+	btnComp.SetLayout(btnVL)
+	btnComp.SetBackground(bg)
+
+	localAcc := acc
+
+	switchBtn, _ := walk.NewPushButton(btnComp)
+	switchBtn.SetText(i18n.T(i18n.BtnSwitch))
+	switchBtn.SetFont(fontNormal)
+	switchBtn.Clicked().Attach(func() {
+		onSwitchAccount(localAcc)
 	})
-	switchBtn.Importance = widget.HighImportance
 
-	deleteBtn := widget.NewButton("X", func() {
-		onDelete(acc)
+	deleteBtn, _ := walk.NewPushButton(btnComp)
+	deleteBtn.SetText(i18n.T(i18n.BtnDelete))
+	deleteBtn.SetFont(fontSmall)
+	deleteBtn.Clicked().Attach(func() {
+		onDeleteAccount(localAcc)
 	})
-	deleteBtn.Importance = widget.DangerImportance
-
-	buttons := container.NewVBox(switchBtn, deleteBtn)
-
-	// Card layout
-	left := container.NewHBox(avatar, info)
-	content := container.NewBorder(nil, nil, left, buttons, nil)
-
-	// Card with background
-	bg := canvas.NewRectangle(ColorSurface)
-	bg.CornerRadius = 8
-
-	card := container.NewStack(bg, container.NewPadded(content))
-	return container.NewPadded(card)
 }
 
-func onSwitch(acc accounts.Account) {
-	if globalStatusLabel != nil {
-		globalStatusLabel.SetText("⏳ " + i18n.T(i18n.StatusLauncherRestart))
+func onSwitchAccount(acc accounts.Account) {
+	if accountsStatusLabel != nil {
+		accountsStatusLabel.SetText("⏳ " + i18n.T(i18n.StatusLauncherRestart))
 	}
 
 	go func() {
 		result := accounts.SwitchAccount(acc.ID)
-		if result.Success {
-			if result.HasSession {
-				globalStatusLabel.SetText(i18n.TF(i18n.StatusAutoLoginActive, map[string]string{"name": result.AccountName}))
-			} else {
-				globalStatusLabel.SetText(i18n.TF(i18n.StatusManualLogin, map[string]string{"name": result.AccountName, "email": result.Email}))
+		RunOnUI(func() {
+			if accountsStatusLabel == nil {
+				return
 			}
-		} else {
-			globalStatusLabel.SetText("❌ " + result.Error)
-		}
+			if result.Success {
+				if result.HasSession {
+					accountsStatusLabel.SetText(i18n.TF(i18n.StatusAutoLoginActive, map[string]string{"name": result.AccountName}))
+				} else {
+					accountsStatusLabel.SetText(i18n.TF(i18n.StatusManualLogin, map[string]string{"name": result.AccountName, "email": result.Email}))
+				}
+			} else {
+				accountsStatusLabel.SetText("❌ " + result.Error)
+			}
+		})
 	}()
 }
 
-func onDelete(acc accounts.Account) {
-	dialog.ShowConfirm("Delete", i18n.T(i18n.ConfirmDelete), func(ok bool) {
-		if ok {
-			accounts.DeleteAccount(acc.ID)
-			globalStatusLabel.SetText("✓ " + i18n.T(i18n.StatusAccountDeleted))
-			RefreshAccountsTab()
+func onDeleteAccount(acc accounts.Account) {
+	if mainWindow == nil {
+		return
+	}
+	ret := walk.MsgBox(mainWindow, i18n.T(i18n.BtnDelete), i18n.T(i18n.ConfirmDelete),
+		walk.MsgBoxYesNo|walk.MsgBoxIconQuestion)
+	if ret == walk.DlgCmdYes {
+		accounts.DeleteAccount(acc.ID)
+		if accountsStatusLabel != nil {
+			accountsStatusLabel.SetText("✓ " + i18n.T(i18n.StatusAccountDeleted))
 		}
-	}, MainWindow)
+		if tabWidget != nil {
+			pages := tabWidget.Pages()
+			if pages.Len() > 0 {
+				rebuildAccountsTab(pages.At(0))
+			}
+		}
+	}
 }
 
 func SetStatus(msg string) {
-	if globalStatusLabel != nil {
-		globalStatusLabel.SetText(msg)
+	RunOnUI(func() {
+		if accountsStatusLabel != nil {
+			accountsStatusLabel.SetText(msg)
+		}
+	})
+}
+
+// ShowUpdateBanner sets the update banner text and displays it.
+func ShowUpdateBanner(text string) {
+	pendingUpdateText = text
+	if updateBannerLbl != nil {
+		updateBannerLbl.SetText(text)
+	} else {
+		// Banner doesn't exist yet — rebuild to show it
+		if tabWidget != nil {
+			pages := tabWidget.Pages()
+			if pages.Len() > 0 {
+				rebuildAccountsTab(pages.At(0))
+			}
+		}
 	}
 }

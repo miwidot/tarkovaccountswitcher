@@ -1,77 +1,66 @@
 package ui
 
 import (
-	_ "embed"
 	"os"
 
-	"fyne.io/systray"
+	"github.com/lxn/walk"
+
+	"tarkov-account-switcher/internal/updater"
 )
 
-//go:embed icon.ico
-var iconData []byte
+var notifyIcon *walk.NotifyIcon
 
-var (
-	quitChan chan struct{}
-)
+// setupTray creates the system tray icon with context menu.
+func setupTray() error {
+	var err error
+	notifyIcon, err = walk.NewNotifyIcon(mainWindow)
+	if err != nil {
+		return err
+	}
 
-// SetupTray initializes the system tray
-func SetupTray(onReady func(), onExit func()) {
-	quitChan = make(chan struct{})
-	systray.Run(onReady, onExit)
-}
+	// Set icon
+	if appIcon != nil {
+		notifyIcon.SetIcon(appIcon)
+	}
+	notifyIcon.SetToolTip("Tarkov Account Switcher " + updater.CurrentVersion)
+	notifyIcon.SetVisible(true)
 
-// OnTrayReady is called when the tray is ready
-func OnTrayReady() {
-	systray.SetIcon(iconData)
-	systray.SetTitle("Tarkov Account Switcher")
-	systray.SetTooltip("Tarkov Account Switcher v2.0.0")
-
-	// Menu items
-	mOpen := systray.AddMenuItem("Open / Öffnen", "Show window")
-	systray.AddSeparator()
-	mQuit := systray.AddMenuItem("Quit / Beenden", "Exit application")
-
-	go func() {
-		for {
-			select {
-			case <-mOpen.ClickedCh:
-				ShowWindow()
-			case <-mQuit.ClickedCh:
-				if quitChan != nil {
-					close(quitChan)
-				}
-				systray.Quit()
-				if App != nil {
-					App.Quit()
-				}
-				return
-			}
+	// Double-click opens window
+	notifyIcon.MouseUp().Attach(func(x, y int, button walk.MouseButton) {
+		if button == walk.LeftButton {
+			ShowWindow()
 		}
-	}()
+	})
+
+	// Context menu
+	menu := notifyIcon.ContextMenu()
+
+	openAction := walk.NewAction()
+	openAction.SetText("Open / Öffnen")
+	openAction.Triggered().Attach(func() {
+		ShowWindow()
+	})
+	menu.Actions().Add(openAction)
+
+	menu.Actions().Add(walk.NewSeparatorAction())
+
+	quitAction := walk.NewAction()
+	quitAction.SetText("Quit / Beenden")
+	quitAction.Triggered().Attach(func() {
+		QuitApp()
+	})
+	menu.Actions().Add(quitAction)
+
+	return nil
 }
 
-// OnTrayExit is called when the tray exits
-func OnTrayExit() {
-	// Quit the Fyne app when tray exits
-	if App != nil {
-		App.Quit()
-	}
-	// Force exit to ensure process terminates
-	os.Exit(0)
-}
-
-// GetQuitChan returns the quit channel
-func GetQuitChan() <-chan struct{} {
-	return quitChan
-}
-
-// QuitApp signals the app to quit
+// QuitApp cleans up and exits the application.
 func QuitApp() {
-	if quitChan != nil {
-		close(quitChan)
+	if notifyIcon != nil {
+		notifyIcon.Dispose()
 	}
-	systray.Quit()
-	if App != nil {
-		App.Quit()
+	if mainWindow != nil {
+		mainWindow.Close()
 	}
+	os.Exit(0)
 }

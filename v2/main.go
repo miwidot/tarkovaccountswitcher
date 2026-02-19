@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"tarkov-account-switcher/internal/accounts"
 	"tarkov-account-switcher/internal/config"
 	"tarkov-account-switcher/internal/launcher"
@@ -9,8 +11,10 @@ import (
 )
 
 func main() {
-	// Single instance check - disabled for now
-	_ = singleinstance.Lock("TarkovAccountSwitcher_v2")
+	// Single instance check - exit if already running
+	if !singleinstance.Lock("TarkovAccountSwitcher_v2") {
+		os.Exit(0)
+	}
 
 	// Ensure data directory exists
 	if err := config.EnsureDataDir(); err != nil {
@@ -32,13 +36,8 @@ func main() {
 		ui.HideWindow()
 	}
 
-	// Create app and window
-	ui.CreateApp()
-	window := ui.CreateMainWindow()
-
-	// Run system tray in goroutine
-	go ui.SetupTray(ui.OnTrayReady, ui.OnTrayExit)
-
-	// Show window and run
-	window.ShowAndRun()
+	// Run the Walk UI (blocks until app exits)
+	if err := ui.Run(); err != nil {
+		panic(err)
+	}
 }
