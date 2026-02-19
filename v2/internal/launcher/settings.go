@@ -115,7 +115,16 @@ func RestoreLauncherSession(sessionData json.RawMessage) error {
 		return err
 	}
 
-	return os.WriteFile(paths.LauncherSettingsPath, settingsData, 0644)
+	if err := os.WriteFile(paths.LauncherSettingsPath, settingsData, 0644); err != nil {
+		return err
+	}
+
+	// Restore ingame background (EnvironmentUiType) to Game.ini
+	if envType, ok := savedSession["environmentUiType"].(string); ok && envType != "" {
+		WriteEnvironmentUiType(envType)
+	}
+
+	return nil
 }
 
 // ReadLauncherSettings reads the current launcher settings
@@ -133,4 +142,59 @@ func ReadLauncherSettings() (map[string]interface{}, error) {
 	}
 
 	return settings, nil
+}
+
+// GetGameSettingsPath returns the path to the EFT Game.ini file
+func GetGameSettingsPath() string {
+	appData := os.Getenv("APPDATA")
+	return filepath.Join(appData, "Battlestate Games", "Escape from Tarkov", "Settings", "Game.ini")
+}
+
+// ReadEnvironmentUiType reads the current EnvironmentUiType (ingame background) from Game.ini
+func ReadEnvironmentUiType() string {
+	data, err := os.ReadFile(GetGameSettingsPath())
+	if err != nil {
+		return ""
+	}
+
+	var gameSettings map[string]interface{}
+	if err := json.Unmarshal(data, &gameSettings); err != nil {
+		return ""
+	}
+
+	if envType, ok := gameSettings["EnvironmentUiType"].(string); ok {
+		return envType
+	}
+	return ""
+}
+
+// WriteEnvironmentUiType writes the EnvironmentUiType (ingame background) to Game.ini
+func WriteEnvironmentUiType(envType string) error {
+	if envType == "" {
+		return nil // Nothing to restore
+	}
+
+	gameSettingsPath := GetGameSettingsPath()
+
+	// Read existing settings
+	data, err := os.ReadFile(gameSettingsPath)
+	if err != nil {
+		return err // Game.ini must exist
+	}
+
+	var gameSettings map[string]interface{}
+	if err := json.Unmarshal(data, &gameSettings); err != nil {
+		return err
+	}
+
+	// Update EnvironmentUiType
+	gameSettings["EnvironmentUiType"] = envType
+
+	// Write back
+	settingsData, err := json.MarshalIndent(gameSettings, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(gameSettingsPath, settingsData, 0644)
 }

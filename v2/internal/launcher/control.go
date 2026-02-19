@@ -43,27 +43,22 @@ func ClearGameCache() {
 	// Get paths
 	tempDir := os.TempDir()
 	localAppData := os.Getenv("LOCALAPPDATA")
-	appData := os.Getenv("APPDATA")
 
-	// All cache directories to clear
+	// Get launcher installation directory from settings
+	settings := config.GetSettings()
+	launcherDir := filepath.Dir(settings.LauncherPath)
+
+	// Cache directories to clear (NOT the entire CefCache - that breaks background loading)
 	cacheDirs := []string{
 		// Temp folder caches
 		filepath.Join(tempDir, "Battlestate Games", "EscapeFromTarkov"),
 		filepath.Join(tempDir, "Battlestate Games", "EscapeFromTarkovArena"),
-		// Launcher CefCache (browser cache - stores background images, etc.)
-		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "Cache"),
-		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "Code Cache"),
-		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "GPUCache"),
-		// Session Storage (might store user preferences)
-		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "Session Storage"),
-		// Local Storage (might store background setting)
-		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "Local Storage"),
-	}
 
-	// Files to delete (not directories)
-	cacheFiles := []string{
-		// Launcher cache log files
-		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "000003.log"),
+		// Only clear the image/resource cache inside CefCache, not the whole folder
+		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "Cache"),
+
+		// Launcher installation cache
+		filepath.Join(launcherDir, "Temp"),
 	}
 
 	// Remove directories
@@ -72,12 +67,4 @@ func ClearGameCache() {
 			os.RemoveAll(dir)
 		}
 	}
-
-	// Remove files
-	for _, file := range cacheFiles {
-		os.Remove(file)
-	}
-
-	// Don't delete: appData + "Battlestate Games/BsgLauncher/settings" - we need this for auth!
-	_ = appData // silence unused warning
 }

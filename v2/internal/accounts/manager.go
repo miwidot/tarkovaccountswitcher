@@ -273,15 +273,16 @@ func SaveCurrentAccountSession() {
 
 	for i := range accounts {
 		if accounts[i].Email == login {
-			// Save auth-related fields AND selectedGame preference
+			// Save auth-related fields, selectedGame AND ingame background
 			authSession := map[string]interface{}{
-				"login":        launcherSettings["login"],
-				"at":           launcherSettings["at"],
-				"rt":           launcherSettings["rt"],
-				"atet":         launcherSettings["atet"],
-				"keepLoggedIn": launcherSettings["keepLoggedIn"],
-				"saveLogin":    launcherSettings["saveLogin"],
-				"selectedGame": launcherSettings["selectedGame"],
+				"login":             launcherSettings["login"],
+				"at":                launcherSettings["at"],
+				"rt":                launcherSettings["rt"],
+				"atet":              launcherSettings["atet"],
+				"keepLoggedIn":      launcherSettings["keepLoggedIn"],
+				"saveLogin":         launcherSettings["saveLogin"],
+				"selectedGame":      launcherSettings["selectedGame"],
+				"environmentUiType": launcher.ReadEnvironmentUiType(),
 			}
 			sessionData, _ := json.Marshal(authSession)
 			accounts[i].LauncherSession = sessionData
