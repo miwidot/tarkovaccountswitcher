@@ -48,6 +48,9 @@ const (
 	LabelStreamerMode    = "labelStreamerMode"
 	StreamerModeHelp     = "streamerModeHelp"
 
+	// Theme
+	LabelTheme = "labelTheme"
+
 	// Status Messages
 	StatusFillFields     = "statusFillFields"
 	StatusAccountAdded   = "statusAccountAdded"
@@ -101,6 +104,7 @@ var translations = map[string]map[string]string{
 		BtnSave:             "Speichern",
 		LabelStreamerMode:   "Streamer Modus",
 		StreamerModeHelp:    "Versteckt Email-Adressen mit ****",
+		LabelTheme:          "Design / Theme",
 
 		// Status Messages
 		StatusFillFields:     "Bitte fülle alle Felder aus",
@@ -153,6 +157,7 @@ var translations = map[string]map[string]string{
 		BtnSave:             "Save",
 		LabelStreamerMode:   "Streamer Mode",
 		StreamerModeHelp:    "Hides email addresses with ****",
+		LabelTheme:          "Theme / Design",
 
 		// Status Messages
 		StatusFillFields:     "Please fill all fields",

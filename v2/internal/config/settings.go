@@ -11,6 +11,7 @@ type Settings struct {
 	LauncherPath string `json:"launcherPath"`
 	Language     string `json:"language"`
 	StreamerMode bool   `json:"streamerMode"`
+	Theme        string `json:"theme"`
 }
 
 // Paths holds all the important file paths for the application
@@ -103,6 +104,13 @@ func SetLauncherPath(launcherPath string) error {
 func SetStreamerMode(enabled bool) error {
 	settings := GetSettings()
 	settings.StreamerMode = enabled
+	return SaveSettings(settings)
+}
+
+// SetTheme sets and saves the theme setting
+func SetTheme(id string) error {
+	settings := GetSettings()
+	settings.Theme = id
 	return SaveSettings(settings)
 }
 

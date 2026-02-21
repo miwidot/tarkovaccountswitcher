@@ -11,10 +11,17 @@ import (
 )
 
 func main() {
-	// Single instance check - exit if already running
+	// Single instance check - signal existing instance to show, then exit
 	if !singleinstance.Lock("TarkovAccountSwitcher_v2") {
+		singleinstance.SignalExisting()
 		os.Exit(0)
 	}
+
+	// Create event so future instances can signal us
+	singleinstance.CreateShowEvent()
+	go singleinstance.WaitForShowSignal(func() {
+		ui.ShowWindow()
+	})
 
 	// Ensure data directory exists
 	if err := config.EnsureDataDir(); err != nil {

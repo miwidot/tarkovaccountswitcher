@@ -78,10 +78,8 @@ func rebuildAccountsTab(page *walk.TabPage) {
 	vl.SetMargins(walk.Margins{HNear: 4, VNear: 4, HFar: 4, VFar: 4})
 	scrollView.SetLayout(vl)
 
-	cardBg := walk.RGB(240, 240, 240)
-
 	for _, acc := range accs {
-		createAccountCard(scrollView, acc, cardBg)
+		createAccountCard(scrollView, acc, CurrentTheme().CardBg)
 	}
 
 	walk.NewVSpacer(scrollView)
@@ -107,16 +105,21 @@ func createAccountCard(parent walk.Container, acc accounts.Account, cardBg walk.
 	infoComp.SetLayout(infoVL)
 	infoComp.SetBackground(bg)
 
+	t := CurrentTheme()
+
 	nameLbl, _ := walk.NewLabel(infoComp)
 	nameLbl.SetText(acc.Name)
 	nameLbl.SetFont(fontBold)
+	nameLbl.SetTextColor(t.TextPrimary)
 
 	emailLbl, _ := walk.NewLabel(infoComp)
 	emailLbl.SetText(config.MaskEmail(acc.Email))
 	emailLbl.SetFont(fontSmall)
+	emailLbl.SetTextColor(t.TextSecondary)
 
 	statusLbl, _ := walk.NewLabel(infoComp)
 	statusLbl.SetFont(fontSmall)
+	statusLbl.SetTextColor(t.TextSecondary)
 	if acc.HasSession() {
 		statusLbl.SetText("✅ " + i18n.T(i18n.StatusAutoLogin))
 	} else {

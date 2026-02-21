@@ -62,6 +62,26 @@ func rebuildSettingsTab(page *walk.TabPage) {
 	// Separator
 	newSeparator(page)
 
+	// --- Theme ---
+	themeLbl, _ := walk.NewLabel(page)
+	themeLbl.SetText(i18n.T(i18n.LabelTheme))
+	themeLbl.SetFont(fontBold)
+
+	themeCombo, _ := walk.NewComboBox(page)
+	themeCombo.SetFont(fontNormal)
+	themeCombo.SetModel(GetThemeNames())
+	themeCombo.SetCurrentIndex(GetThemeIndex(settings.Theme))
+	themeCombo.CurrentIndexChanged().Attach(func() {
+		id := GetThemeIDByIndex(themeCombo.CurrentIndex())
+		config.SetTheme(id)
+		SetThemeByID(id)
+		applyWindowTheme(mainWindow)
+		RefreshUI()
+	})
+
+	// Separator
+	newSeparator(page)
+
 	// --- Launcher Path ---
 	pathLbl, _ := walk.NewLabel(page)
 	pathLbl.SetText(i18n.T(i18n.LabelLauncherPath))
