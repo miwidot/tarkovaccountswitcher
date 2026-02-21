@@ -115,6 +115,9 @@ func initTheme() {
 	} else {
 		currentTheme = themes["light"]
 	}
+
+	// Set system dark mode before any windows are created
+	enableSystemDarkMode(currentTheme.UseDarkWindowChrome)
 }
 
 // isWindowsDarkMode checks the Windows registry for dark mode preference.
@@ -133,17 +136,23 @@ func isWindowsDarkMode() bool {
 	return val == 0
 }
 
-// applyWindowTheme sets the window background color and dark titlebar.
+// applyWindowTheme sets the window background, dark titlebar, and system dark mode.
 func applyWindowTheme(mw *walk.MainWindow) {
 	t := CurrentTheme()
+
+	// Set system-wide dark/light mode for controls
+	enableSystemDarkMode(t.UseDarkWindowChrome)
 
 	bg, _ := walk.NewSolidColorBrush(t.WindowBg)
 	mw.SetBackground(bg)
 
-	if t.UseDarkWindowChrome {
-		setDarkTitlebar(mw.Handle(), true)
-	} else {
-		setDarkTitlebar(mw.Handle(), false)
+	setDarkTitlebar(mw.Handle(), t.UseDarkWindowChrome)
+	allowDarkModeForHWND(mw.Handle(), t.UseDarkWindowChrome)
+	win.SendMessage(mw.Handle(), wmThemeChanged, 0, 0)
+
+	// Dark mode for the tab control header
+	if tabWidget != nil {
+		setTabWidgetDarkMode(tabWidget, t.UseDarkWindowChrome)
 	}
 }
 
@@ -178,6 +187,7 @@ func applyThemeToPage(page *walk.TabPage) {
 }
 
 func applyThemeToChildren(container walk.Container, t *Theme) {
+	dark := t.UseDarkWindowChrome
 	children := container.Children()
 	for i := 0; i < children.Len(); i++ {
 		w := children.At(i)
@@ -191,6 +201,21 @@ func applyThemeToChildren(container walk.Container, t *Theme) {
 			setBg, _ := walk.NewSolidColorBrush(t.CardBg)
 			v.SetBackground(setBg)
 			v.SetTextColor(t.TextPrimary)
+			if dark {
+				setControlDarkMode(v.Handle(), true, "DarkMode_CFD")
+			}
+		case *walk.PushButton:
+			if dark {
+				setControlDarkMode(v.Handle(), true, "DarkMode_Explorer")
+			}
+		case *walk.ComboBox:
+			if dark {
+				setComboBoxDarkMode(v, true)
+			}
+		case *walk.CheckBox:
+			if dark {
+				setControlDarkMode(v.Handle(), true, "Explorer")
+			}
 		case *walk.ScrollView:
 			svBg, _ := walk.NewSolidColorBrush(t.SurfaceBg)
 			v.SetBackground(svBg)
