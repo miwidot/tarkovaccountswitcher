@@ -206,7 +206,7 @@ func applyThemeToChildren(container walk.Container, t *Theme) {
 			}
 		case *walk.PushButton:
 			if dark {
-				setControlDarkMode(v.Handle(), true, "DarkMode_Explorer")
+				subclassDarkButton(v)
 			}
 		case *walk.ComboBox:
 			if dark {
