@@ -10,7 +10,7 @@ import (
 )
 
 // CurrentVersion is the app version. Used everywhere instead of hardcoded strings.
-const CurrentVersion = "v2.0.2"
+const CurrentVersion = "v2.0.3"
 
 // UpdateInfo describes a single available update.
 type UpdateInfo struct {

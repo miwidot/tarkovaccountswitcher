@@ -1,6 +1,12 @@
 # Changelog - Tarkov Account Switcher v2
 
-## v2.0.0 (2026-02-22)
+## v2.0.3 (2026-02-22)
+
+- Fix: v2.0.2 release exe was compiled with v2.0.1 version string, causing false update notification
+
+---
+
+## v2.0.2 (2026-02-22)
 
 ### UI Framework Migration
 - **Migrated from lxn/walk to Wails v2** (WebView2-based frontend)
@@ -17,44 +23,56 @@
 
 ### System Tray
 - Custom Win32 API tray implementation (`Shell_NotifyIconW`) on dedicated goroutine
-- Replaces energye/systray library (which caused thread conflicts with Wails)
-- Right-click context menu with Open/Quit (language-aware: Oeffnen/Beenden)
+- Right-click context menu with Open/Quit (language-aware)
 - Double-click to show window
-- Proper cleanup on app exit
 
-### Application Icon
-- Icon properly embedded in PE resources via `wails build`
-- Shows correctly in Windows Explorer, taskbar, and Task Manager
-- System tray uses embedded icon via `//go:embed`
+### Known Limitations Resolved (from Walk)
+- ~~Buttons and tab headers remain native Windows style~~ — Now fully styled via CSS
+- ~~ComboBox dropdowns may appear light in dark mode~~ — Now styled select elements
 
-### All v1 Features Preserved
+---
+
+## v2.0.1 (2026-02-22)
+
+### Theme System (Walk)
+- Added 3 themes: Light, Dark, Cappuccino
+- Auto-detect Windows dark mode via registry (`AppsUseLightTheme`)
+- DWM dark titlebar via `DwmSetWindowAttribute`
+- Theme selection in Settings tab
+
+### Dark Mode Fixes (Walk)
+- Undocumented uxtheme.dll APIs (ordinals 132/133/135/136) for system dark mode
+- `SetPreferredAppMode`, `AllowDarkModeForWindow` for per-control dark mode
+- `SetWindowTheme("DarkMode_Explorer")` for tabs, `"DarkMode_CFD"` for ComboBox/LineEdit
+- Owner-draw button painting via WndProc subclassing (custom GDI dark buttons)
+
+### Single Instance Show
+- Re-launching the exe now shows the existing window from tray instead of silently exiting
+- Implemented via Named Windows Events (`CreateEventW`/`SetEvent`)
+
+---
+
+## v2.0.0 (2026-02-19)
+
+### Complete Rewrite
+- **Rewritten from Electron to Go** with lxn/walk native Windows GUI
+- Binary size reduced from ~120MB to ~20MB
+- Native Windows application with embedded icon
+
+### Features
 - Account management (Add, Delete, Switch)
-- Automatic session capture (2s polling, 5min timeout)
-- One-click account switching with launcher restart
+- Session capture and auto-login (2s polling, 5min timeout)
 - AES-256-CBC encryption (random IV, PKCS7 padding)
+- Streamer Mode (mask email addresses)
+- System tray integration with minimize on launcher start
+- Multi-language support (German/English with system detection)
+- Single instance lock (Windows Mutex)
 - Update notifications via GitHub Releases API
-- Streamer Mode (email masking)
-- Multi-language (German/English with system detection)
-- Single instance lock (Wails built-in + Windows Mutex)
 - Per-account `selectedGame` (EFT/Arena) save/restore
 - Per-account `EnvironmentUiType` (ingame background) save/restore
 - Cache clearing on account switch
 
-### Cache Clearing on Switch
-Clears the following to ensure fresh data per account:
-- `%TEMP%\Battlestate Games\EscapeFromTarkov\`
-- `%TEMP%\Battlestate Games\EscapeFromTarkovArena\`
-- `%LOCALAPPDATA%\Battlestate Games\BsgLauncher\CefCache\` (Cache, Local Storage, Session Storage)
-
 ### Technical
-- Wails v2.11.0 with WebView2 frontend
-- `HideWindowOnClose: true` for minimize-to-tray behavior
-- Assets embedded via `//go:embed all:frontend/dist`
-- Frontend: vanilla HTML/CSS/JS (no npm, no bundler, no framework)
-- CSS custom properties for theme system (`[data-theme="..."]`)
-- Window drag via `--wails-draggable: drag` on header
-- Events from Go to JS: `session-captured`, `update-available`
-
-### Known Limitations Resolved (from v1)
-- ~~Buttons and tab headers remain native Windows style~~ — Now fully styled via CSS
-- ~~ComboBox dropdowns may appear light in dark mode~~ — Now styled select elements
+- Go with lxn/walk GUI framework
+- Windows resource embedding (icon, manifest, version info)
+- Dark theme with green accent (#00b894)
