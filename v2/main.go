@@ -1,28 +1,22 @@
 package main
 
 import (
-	"os"
+	"embed"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"tarkov-account-switcher/internal/accounts"
 	"tarkov-account-switcher/internal/config"
-	"tarkov-account-switcher/internal/launcher"
-	"tarkov-account-switcher/internal/singleinstance"
-	"tarkov-account-switcher/ui"
 )
 
+//go:embed all:frontend/dist
+var assets embed.FS
+
 func main() {
-	// Single instance check - signal existing instance to show, then exit
-	if !singleinstance.Lock("TarkovAccountSwitcher_v2") {
-		singleinstance.SignalExisting()
-		os.Exit(0)
-	}
-
-	// Create event so future instances can signal us
-	singleinstance.CreateShowEvent()
-	go singleinstance.WaitForShowSignal(func() {
-		ui.ShowWindow()
-	})
-
 	// Ensure data directory exists
 	if err := config.EnsureDataDir(); err != nil {
 		panic(err)
@@ -33,18 +27,42 @@ func main() {
 		panic(err)
 	}
 
-	// Set up session captured callback
-	accounts.SessionCapturedCallback = func(accountID string) {
-		ui.RefreshAccountsTab()
-	}
+	app := NewApp()
 
-	// Set up launcher started callback - minimize to tray
-	launcher.OnLauncherStarted = func() {
-		ui.HideWindow()
-	}
-
-	// Run the Walk UI (blocks until app exits)
-	if err := ui.Run(); err != nil {
+	err := wails.Run(&options.App{
+		Title:             "Tarkov Account Switcher",
+		Width:             800,
+		Height:            600,
+		MinWidth:          600,
+		MinHeight:         400,
+		DisableResize:     false,
+		Frameless:         false,
+		StartHidden:       false,
+		HideWindowOnClose: true,
+		BackgroundColour:  &options.RGBA{R: 26, G: 26, B: 26, A: 255},
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		OnStartup:  app.startup,
+		OnDomReady: app.domReady,
+		OnShutdown: app.shutdown,
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId: "TarkovAccountSwitcher-v2-a3f8e921",
+			OnSecondInstanceLaunch: func(data options.SecondInstanceData) {
+				runtime.WindowUnminimise(app.ctx)
+				runtime.WindowShow(app.ctx)
+			},
+		},
+		Windows: &windows.Options{
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+			DisableWindowIcon:    false,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+	if err != nil {
 		panic(err)
 	}
 }

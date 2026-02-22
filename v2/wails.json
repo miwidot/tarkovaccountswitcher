@@ -1,0 +1,20 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "tarkov-account-switcher",
+  "outputfilename": "Tarkov Account Switcher",
+  "frontend:dir": "frontend",
+  "frontend:build": "",
+  "frontend:dev:watcher": "",
+  "frontend:dev:serverUrl": "",
+  "author": {
+    "name": "Tarkov-Stammtisch.de",
+    "email": ""
+  },
+  "info": {
+    "companyName": "Tarkov-Stammtisch.de",
+    "productName": "Tarkov Account Switcher",
+    "productVersion": "2.0.0",
+    "copyright": "Tarkov-Stammtisch.de",
+    "comments": "Manage multiple Escape from Tarkov accounts"
+  }
+}
