@@ -274,13 +274,15 @@ func SaveCurrentAccountSession() {
 	for i := range accounts {
 		if accounts[i].Email == login {
 			// Save auth-related fields, selectedGame AND ingame background
+			// Always force keepLoggedIn=true so sessions persist across restarts
 			authSession := map[string]interface{}{
 				"login":             launcherSettings["login"],
 				"at":                launcherSettings["at"],
 				"rt":                launcherSettings["rt"],
 				"atet":              launcherSettings["atet"],
-				"keepLoggedIn":      launcherSettings["keepLoggedIn"],
-				"saveLogin":         launcherSettings["saveLogin"],
+				"sysInfCheck":       launcherSettings["sysInfCheck"],
+				"keepLoggedIn":      true,
+				"saveLogin":         true,
 				"selectedGame":      launcherSettings["selectedGame"],
 				"environmentUiType": launcher.ReadEnvironmentUiType(),
 			}

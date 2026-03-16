@@ -28,7 +28,7 @@ func UpdateLauncherAccount(email string) error {
 	// Update login email and settings
 	settings["login"] = email
 	settings["saveLogin"] = true
-	settings["keepLoggedIn"] = false
+	settings["keepLoggedIn"] = true
 	settings["tempFolder"] = paths.TempFolder
 
 	// CRITICAL: Delete session tokens to force fresh login
@@ -99,7 +99,7 @@ func RestoreLauncherSession(sessionData json.RawMessage) error {
 
 	// Restore auth-related fields AND selectedGame from saved session
 	// Preserve everything else (games, UI preferences) from current launcher state
-	authFields := []string{"login", "at", "rt", "atet", "keepLoggedIn", "saveLogin", "selectedGame"}
+	authFields := []string{"login", "at", "rt", "atet", "keepLoggedIn", "saveLogin", "selectedGame", "sysInfCheck"}
 	for _, field := range authFields {
 		if val, ok := savedSession[field]; ok {
 			existingSettings[field] = val

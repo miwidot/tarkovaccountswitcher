@@ -79,8 +79,9 @@ func StartWatcher(accountID, expectedEmail string) {
 					"at":                launcherSettings["at"],
 					"rt":                launcherSettings["rt"],
 					"atet":              launcherSettings["atet"],
-					"keepLoggedIn":      launcherSettings["keepLoggedIn"],
-					"saveLogin":         launcherSettings["saveLogin"],
+					"sysInfCheck":       launcherSettings["sysInfCheck"],
+					"keepLoggedIn":      true,
+					"saveLogin":         true,
 					"selectedGame":      launcherSettings["selectedGame"],
 					"environmentUiType": launcher.ReadEnvironmentUiType(),
 				}

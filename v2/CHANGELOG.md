@@ -1,5 +1,14 @@
 # Changelog - Tarkov Account Switcher v2
 
+## v2.0.4 (2026-03-17)
+
+### Session Persistence Fix
+- Fix: `keepLoggedIn` was set to `false` on account switch, causing BSG launcher to expire sessions early → re-login + captcha required
+- Fix: `sysInfCheck` (system fingerprint) is now saved and restored per account — missing fingerprint triggered BSG server-side re-auth
+- `keepLoggedIn` and `saveLogin` are now always forced to `true` when capturing sessions
+
+---
+
 ## v2.0.3 (2026-02-22)
 
 - Fix: v2.0.2 release exe was compiled with v2.0.1 version string, causing false update notification
