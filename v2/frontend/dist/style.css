@@ -1,0 +1,1385 @@
+/* ============================================================
+   Tarkov Account Switcher — Theme System + EFT In-Game Theme
+   4 themes via CSS custom properties: eft, dark, light, cappuccino
+   ============================================================ */
+
+@font-face {
+    font-family: 'Oswald';
+    src: url('/fonts/oswald-regular.woff2') format('woff2');
+    font-weight: 200 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ============================================================
+   THEME: EFT (Escape from Tarkov In-Game Menu) — DEFAULT
+   ============================================================ */
+:root,
+[data-theme="eft"] {
+    --font-family: 'Oswald', 'Segoe UI', sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-bold: 600;
+
+    --bg-window: #121210;
+    --bg-surface: #1a1a18;
+    --bg-card: #1e1e1c;
+    --bg-card-hover: #282824;
+    --bg-input: #141412;
+    --bg-header: rgba(14, 14, 12, 0.97);
+
+    --text-primary: #c8bfa5;
+    --text-secondary: #8a8068;
+    --text-title: #d4c9a8;
+    --text-muted: #4a4538;
+
+    --accent: #c8aa6e;
+    --accent-hover: #d4bb82;
+    --accent-dark: #9a7e48;
+    --accent-glow: rgba(200, 170, 110, 0.15);
+    --accent-glow-strong: rgba(200, 170, 110, 0.35);
+
+    --success: #7ab356;
+    --warning: #c8aa6e;
+    --error: #a03030;
+
+    --border-color: rgba(200, 170, 110, 0.12);
+    --border-accent: #c8aa6e;
+
+    --btn-primary-bg: linear-gradient(180deg, #c8aa6e 0%, #9a7e48 100%);
+    --btn-primary-text: #0e0e0c;
+    --btn-primary-hover: linear-gradient(180deg, #dcc080 0%, #b89458 100%);
+    --btn-secondary-bg: transparent;
+    --btn-secondary-text: #c8aa6e;
+    --btn-secondary-border: rgba(200, 170, 110, 0.4);
+    --btn-danger-bg: rgba(160, 48, 48, 0.2);
+    --btn-danger-text: #c85050;
+    --btn-danger-hover: rgba(160, 48, 48, 0.35);
+
+    --card-border-left: 2px solid rgba(200, 170, 110, 0.5);
+    --card-corner: 14px;
+
+    --scrollbar-thumb: #3a3528;
+    --scrollbar-track: #121210;
+
+    --tab-active-border: #c8aa6e;
+    --tab-text: #5a5548;
+    --tab-text-active: #c8aa6e;
+
+    --select-bg: #141412;
+    --select-text: #c8bfa5;
+    --select-border: rgba(200, 170, 110, 0.15);
+
+    --link-color: #c8aa6e;
+
+    --letter-spacing: 0.1em;
+    --text-transform: uppercase;
+
+    /* EFT-specific */
+    --eft-noise-opacity: 0.03;
+    --eft-scanline-opacity: 0.015;
+    --eft-vignette: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+}
+
+/* ============================================================
+   THEME: Dark
+   ============================================================ */
+[data-theme="dark"] {
+    --font-family: 'Segoe UI', system-ui, sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-bold: 600;
+
+    --bg-window: #202020;
+    --bg-surface: #282828;
+    --bg-card: #373737;
+    --bg-card-hover: #404040;
+    --bg-input: #2a2a2a;
+    --bg-header: rgba(30, 30, 30, 0.95);
+
+    --text-primary: #e6e6e6;
+    --text-secondary: #a0a0a0;
+    --text-title: #ffffff;
+    --text-muted: #666666;
+
+    --accent: #60a0ff;
+    --accent-hover: #80b4ff;
+    --accent-dark: #4080d0;
+    --accent-glow: rgba(96, 160, 255, 0.1);
+    --accent-glow-strong: rgba(96, 160, 255, 0.25);
+
+    --success: #50c878;
+    --warning: #e6b432;
+    --error: #f05050;
+
+    --border-color: #3a3a3a;
+    --border-accent: #60a0ff;
+
+    --btn-primary-bg: linear-gradient(180deg, #60a0ff 0%, #4080d0 100%);
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: linear-gradient(180deg, #80b4ff 0%, #5090e0 100%);
+    --btn-secondary-bg: transparent;
+    --btn-secondary-text: #60a0ff;
+    --btn-secondary-border: #60a0ff;
+    --btn-danger-bg: #502020;
+    --btn-danger-text: #f08080;
+    --btn-danger-hover: #6a2020;
+
+    --card-border-left: 3px solid #60a0ff;
+    --card-corner: 0px;
+
+    --scrollbar-thumb: #505050;
+    --scrollbar-track: #202020;
+
+    --tab-active-border: #60a0ff;
+    --tab-text: #888888;
+    --tab-text-active: #ffffff;
+
+    --select-bg: #2a2a2a;
+    --select-text: #e6e6e6;
+    --select-border: #3a3a3a;
+
+    --link-color: #60a0ff;
+
+    --letter-spacing: 0;
+    --text-transform: none;
+}
+
+/* ============================================================
+   THEME: Light
+   ============================================================ */
+[data-theme="light"] {
+    --font-family: 'Segoe UI', system-ui, sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-bold: 600;
+
+    --bg-window: #ffffff;
+    --bg-surface: #f9f9f9;
+    --bg-card: #f0f0f0;
+    --bg-card-hover: #e8e8e8;
+    --bg-input: #ffffff;
+    --bg-header: rgba(250, 250, 250, 0.95);
+
+    --text-primary: #141414;
+    --text-secondary: #646464;
+    --text-title: #000000;
+    --text-muted: #999999;
+
+    --accent: #0078d4;
+    --accent-hover: #1a8ae6;
+    --accent-dark: #005a9e;
+    --accent-glow: rgba(0, 120, 212, 0.1);
+    --accent-glow-strong: rgba(0, 120, 212, 0.2);
+
+    --success: #168039;
+    --warning: #b48200;
+    --error: #c81e1e;
+
+    --border-color: #d8d8d8;
+    --border-accent: #0078d4;
+
+    --btn-primary-bg: linear-gradient(180deg, #0078d4 0%, #005a9e 100%);
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: linear-gradient(180deg, #1a8ae6 0%, #0068b8 100%);
+    --btn-secondary-bg: transparent;
+    --btn-secondary-text: #0078d4;
+    --btn-secondary-border: #0078d4;
+    --btn-danger-bg: #ffeaea;
+    --btn-danger-text: #c81e1e;
+    --btn-danger-hover: #ffd4d4;
+
+    --card-border-left: 3px solid #0078d4;
+    --card-corner: 0px;
+
+    --scrollbar-thumb: #c0c0c0;
+    --scrollbar-track: #f0f0f0;
+
+    --tab-active-border: #0078d4;
+    --tab-text: #888888;
+    --tab-text-active: #000000;
+
+    --select-bg: #ffffff;
+    --select-text: #141414;
+    --select-border: #d8d8d8;
+
+    --link-color: #0078d4;
+
+    --letter-spacing: 0;
+    --text-transform: none;
+}
+
+/* ============================================================
+   THEME: Cappuccino
+   ============================================================ */
+[data-theme="cappuccino"] {
+    --font-family: 'Segoe UI', system-ui, sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-bold: 600;
+
+    --bg-window: #f5ebdc;
+    --bg-surface: #eee1d0;
+    --bg-card: #e1d2be;
+    --bg-card-hover: #d8c8b0;
+    --bg-input: #f5ebdc;
+    --bg-header: rgba(240, 230, 215, 0.95);
+
+    --text-primary: #3c2819;
+    --text-secondary: #785a41;
+    --text-title: #2d1e0f;
+    --text-muted: #a08060;
+
+    --accent: #8c501e;
+    --accent-hover: #a06028;
+    --accent-dark: #6a3c16;
+    --accent-glow: rgba(140, 80, 30, 0.1);
+    --accent-glow-strong: rgba(140, 80, 30, 0.2);
+
+    --success: #327a3c;
+    --warning: #aa7814;
+    --error: #b43228;
+
+    --border-color: #d0c0a8;
+    --border-accent: #8c501e;
+
+    --btn-primary-bg: linear-gradient(180deg, #8c501e 0%, #6a3c16 100%);
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: linear-gradient(180deg, #a06028 0%, #7a4820 100%);
+    --btn-secondary-bg: transparent;
+    --btn-secondary-text: #8c501e;
+    --btn-secondary-border: #8c501e;
+    --btn-danger-bg: #f0d0c8;
+    --btn-danger-text: #b43228;
+    --btn-danger-hover: #e8bab0;
+
+    --card-border-left: 3px solid #8c501e;
+    --card-corner: 0px;
+
+    --scrollbar-thumb: #c0a888;
+    --scrollbar-track: #eee1d0;
+
+    --tab-active-border: #8c501e;
+    --tab-text: #a08060;
+    --tab-text-active: #2d1e0f;
+
+    --select-bg: #f5ebdc;
+    --select-text: #3c2819;
+    --select-border: #d0c0a8;
+
+    --link-color: #8c501e;
+
+    --letter-spacing: 0;
+    --text-transform: none;
+}
+
+/* ============================================================
+   THEME: Killa Girl (Anime Killa — Neon Industrial)
+   ============================================================ */
+[data-theme="killa"] {
+    --font-family: 'Oswald', 'Segoe UI', sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-bold: 600;
+
+    --bg-window: #0c0c14;
+    --bg-surface: #12121c;
+    --bg-card: #161622;
+    --bg-card-hover: #1e1e30;
+    --bg-input: #0e0e18;
+    --bg-header: rgba(10, 10, 18, 0.97);
+
+    --text-primary: #d0cde0;
+    --text-secondary: #7a7594;
+    --text-title: #e8e4f0;
+    --text-muted: #3e3a52;
+
+    --accent: #e84393;
+    --accent-hover: #f06aaf;
+    --accent-dark: #b8307a;
+    --accent-glow: rgba(232, 67, 147, 0.15);
+    --accent-glow-strong: rgba(232, 67, 147, 0.35);
+
+    --success: #00e676;
+    --warning: #e8a435;
+    --error: #f05050;
+
+    --border-color: rgba(232, 67, 147, 0.10);
+    --border-accent: #e84393;
+
+    --btn-primary-bg: linear-gradient(180deg, #e84393 0%, #b8307a 100%);
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: linear-gradient(180deg, #f06aaf 0%, #d03a8a 100%);
+    --btn-secondary-bg: transparent;
+    --btn-secondary-text: #e84393;
+    --btn-secondary-border: rgba(232, 67, 147, 0.4);
+    --btn-danger-bg: rgba(240, 80, 80, 0.15);
+    --btn-danger-text: #f06060;
+    --btn-danger-hover: rgba(240, 80, 80, 0.3);
+
+    --card-border-left: 2px solid rgba(232, 67, 147, 0.6);
+    --card-corner: 14px;
+
+    --scrollbar-thumb: #2a2840;
+    --scrollbar-track: #0c0c14;
+
+    --tab-active-border: #e84393;
+    --tab-text: #4a4660;
+    --tab-text-active: #e84393;
+
+    --select-bg: #0e0e18;
+    --select-text: #d0cde0;
+    --select-border: rgba(232, 67, 147, 0.12);
+
+    --link-color: #e84393;
+
+    --letter-spacing: 0.1em;
+    --text-transform: uppercase;
+
+    /* Killa-specific */
+    --killa-stripe-color: rgba(255, 255, 255, 0.06);
+    --killa-neon-glow: 0 0 20px rgba(232, 67, 147, 0.4);
+    --killa-vignette: radial-gradient(ellipse at center, transparent 40%, rgba(10, 0, 20, 0.7) 100%);
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    font-weight: var(--font-weight-normal);
+    background: var(--bg-window);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    letter-spacing: var(--letter-spacing);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================
+   HEADER / TAB BAR
+   ============================================================ */
+
+.app-header {
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0;
+    flex-shrink: 0;
+    --wails-draggable: drag;
+    position: relative;
+    z-index: 10;
+}
+
+.tab-bar {
+    display: flex;
+    gap: 0;
+    padding: 0 16px;
+}
+
+.tab-btn {
+    font-family: var(--font-family);
+    font-weight: var(--font-weight-bold);
+    font-size: 13px;
+    letter-spacing: var(--letter-spacing);
+    text-transform: var(--text-transform);
+    color: var(--tab-text);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 14px 22px 12px;
+    cursor: pointer;
+    transition: color 0.25s, border-color 0.25s, text-shadow 0.25s;
+    --wails-draggable: no-drag;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--tab-text-active);
+    border-bottom-color: var(--tab-active-border);
+}
+
+/* ============================================================
+   UPDATE BANNER
+   ============================================================ */
+
+.update-banner {
+    background: var(--accent-dark);
+    color: var(--btn-primary-text);
+    padding: 8px 16px;
+    font-size: 12px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.update-banner a {
+    color: inherit;
+    font-weight: var(--font-weight-bold);
+    text-decoration: underline;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ============================================================
+   TAB PANELS
+   ============================================================ */
+
+.tab-panel {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 28px;
+}
+
+.tab-panel.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============================================================
+   ACCOUNT CARDS
+   ============================================================ */
+
+.accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.account-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-card);
+    border-left: var(--card-border-left);
+    padding: 14px 18px;
+    position: relative;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.account-card:hover {
+    background: var(--bg-card-hover);
+}
+
+.account-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.account-name {
+    font-weight: var(--font-weight-bold);
+    font-size: 15px;
+    color: var(--text-title);
+    text-transform: var(--text-transform);
+    letter-spacing: var(--letter-spacing);
+    margin-bottom: 2px;
+}
+
+.account-email {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.account-status {
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.account-status .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.account-status.has-session .status-dot {
+    background: var(--success);
+    box-shadow: 0 0 6px var(--success);
+}
+
+.account-status.no-session .status-dot {
+    background: var(--warning);
+    box-shadow: 0 0 6px var(--warning);
+}
+
+.account-status.has-session {
+    color: var(--success);
+}
+
+.account-status.no-session {
+    color: var(--warning);
+}
+
+.account-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: 16px;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.empty-state h2 {
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: var(--text-transform);
+    letter-spacing: var(--letter-spacing);
+}
+
+.empty-state p {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+
+.section-title {
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-title);
+    text-align: center;
+    text-transform: var(--text-transform);
+    letter-spacing: var(--letter-spacing);
+}
+
+.form-separator {
+    height: 12px;
+}
+
+.form-label {
+    font-size: 12px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-secondary);
+    text-transform: var(--text-transform);
+    letter-spacing: var(--letter-spacing);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.form-label.inline {
+    display: inline;
+    margin-bottom: 0;
+}
+
+.form-input {
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    padding: 10px 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    letter-spacing: var(--letter-spacing);
+}
+
+.form-input:focus {
+    border-color: var(--accent);
+}
+
+.form-input::placeholder {
+    color: var(--text-muted);
+}
+
+.form-select {
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--select-text);
+    background: var(--select-bg);
+    border: 1px solid var(--select-border);
+    padding: 10px 14px;
+    width: 100%;
+    outline: none;
+    cursor: pointer;
+    letter-spacing: var(--letter-spacing);
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.form-select:focus {
+    border-color: var(--accent);
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.flex-grow {
+    flex: 1;
+}
+
+.help-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+.help-text.small {
+    font-size: 11px;
+    text-align: left;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   DECORATIVE DIVIDER (EFT styled, generic fallback)
+   ============================================================ */
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+    opacity: 0.3;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--accent);
+}
+
+.divider-diamond {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.btn {
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: var(--font-weight-bold);
+    text-transform: var(--text-transform);
+    letter-spacing: var(--letter-spacing);
+    padding: 8px 18px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+}
+
+.btn-primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: var(--btn-primary-hover);
+}
+
+.btn-secondary {
+    background: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    border: 1px solid var(--btn-secondary-border);
+}
+
+.btn-secondary:hover {
+    background: var(--accent);
+    color: var(--btn-primary-text);
+}
+
+.btn-danger {
+    background: var(--btn-danger-bg);
+    color: var(--btn-danger-text);
+    border: 1px solid var(--btn-danger-text);
+}
+
+.btn-danger:hover {
+    background: var(--btn-danger-hover);
+}
+
+.btn-large {
+    font-size: 14px;
+    padding: 12px 32px;
+}
+
+.btn-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.btn-row-center {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* ============================================================
+   STATUS MESSAGES
+   ============================================================ */
+
+.status-message {
+    font-size: 13px;
+    text-align: center;
+    padding: 8px 0;
+    min-height: 20px;
+    white-space: pre-line;
+}
+
+.status-message.success { color: var(--success); }
+.status-message.warning { color: var(--warning); }
+.status-message.error   { color: var(--error); }
+.status-message.info    { color: var(--accent); }
+
+/* ============================================================
+   SETTINGS FOOTER
+   ============================================================ */
+
+.spacer {
+    flex: 1;
+}
+
+.settings-footer {
+    text-align: center;
+    padding: 12px 0 6px;
+    border-top: 1px solid var(--border-color);
+}
+
+.version-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.powered-by {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   EFT THEME — PREMIUM OVERRIDES
+   Authentic Escape from Tarkov In-Game Menu aesthetics
+   ============================================================ */
+
+/* --- Background image --- */
+[data-theme="eft"] body {
+    background:
+        linear-gradient(180deg, rgba(12, 12, 10, 0.82) 0%, rgba(12, 12, 10, 0.70) 40%, rgba(12, 12, 10, 0.85) 100%),
+        url('/images/bg-eft.jpg') center center / cover no-repeat fixed;
+    background-color: #121210;
+}
+
+/* --- Noise grain overlay --- */
+[data-theme="eft"] body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: var(--eft-noise-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+}
+
+/* --- Scanline overlay --- */
+[data-theme="eft"] body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: var(--eft-scanline-opacity);
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.4) 2px,
+            rgba(0, 0, 0, 0.4) 4px
+        );
+}
+
+/* --- Vignette on body --- */
+[data-theme="eft"] .vignette-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9997;
+    background: var(--eft-vignette);
+}
+
+/* --- Header --- */
+[data-theme="eft"] .app-header {
+    border-bottom: 1px solid rgba(200, 170, 110, 0.15);
+    background: linear-gradient(180deg, rgba(14, 14, 12, 0.92) 0%, rgba(14, 14, 12, 0.88) 100%);
+    backdrop-filter: blur(8px);
+}
+
+/* --- Tab active glow --- */
+[data-theme="eft"] .tab-btn.active {
+    text-shadow: 0 0 12px rgba(200, 170, 110, 0.5);
+}
+
+[data-theme="eft"] .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 20%;
+    right: 20%;
+    height: 6px;
+    background: radial-gradient(ellipse at center, rgba(200, 170, 110, 0.3) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* --- Account cards --- */
+[data-theme="eft"] .account-card {
+    border: 1px solid rgba(200, 170, 110, 0.08);
+    border-left: 2px solid rgba(200, 170, 110, 0.5);
+    background:
+        linear-gradient(135deg, rgba(200, 170, 110, 0.04) 0%, transparent 50%),
+        rgba(18, 18, 16, 0.75);
+    backdrop-filter: blur(4px);
+    clip-path: polygon(
+        0 0,
+        calc(100% - var(--card-corner)) 0,
+        100% var(--card-corner),
+        100% 100%,
+        0 100%
+    );
+}
+
+[data-theme="eft"] .account-card:hover {
+    border-color: rgba(200, 170, 110, 0.2);
+    background:
+        linear-gradient(135deg, rgba(200, 170, 110, 0.06) 0%, transparent 50%),
+        rgba(24, 24, 20, 0.82);
+    box-shadow:
+        0 0 20px rgba(200, 170, 110, 0.06),
+        inset 0 0 30px rgba(200, 170, 110, 0.02);
+}
+
+/* Corner cut marker line */
+[data-theme="eft"] .account-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: calc(var(--card-corner) * 1.42);
+    height: 1px;
+    background: rgba(200, 170, 110, 0.3);
+    transform-origin: top right;
+    transform: rotate(-45deg) translateX(0.5px);
+    pointer-events: none;
+}
+
+/* --- Buttons with chamfered corners --- */
+[data-theme="eft"] .btn {
+    clip-path: polygon(
+        0 0,
+        calc(100% - 7px) 0,
+        100% 7px,
+        100% 100%,
+        7px 100%,
+        0 calc(100% - 7px)
+    );
+    transition: all 0.2s, box-shadow 0.3s;
+}
+
+[data-theme="eft"] .btn-primary {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="eft"] .btn-primary:hover {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 16px rgba(200, 170, 110, 0.3);
+}
+
+[data-theme="eft"] .btn-secondary {
+    border-color: rgba(200, 170, 110, 0.3);
+}
+
+[data-theme="eft"] .btn-secondary:hover {
+    box-shadow: 0 0 16px rgba(200, 170, 110, 0.25);
+}
+
+/* --- Inputs --- */
+[data-theme="eft"] .form-input,
+[data-theme="eft"] .form-select {
+    border-color: rgba(200, 170, 110, 0.12);
+    background: rgba(10, 10, 8, 0.75);
+    backdrop-filter: blur(4px);
+}
+
+[data-theme="eft"] .form-input:focus,
+[data-theme="eft"] .form-select:focus {
+    border-color: rgba(200, 170, 110, 0.5);
+    box-shadow: 0 0 8px rgba(200, 170, 110, 0.12), inset 0 0 8px rgba(200, 170, 110, 0.04);
+}
+
+/* --- Section titles --- */
+[data-theme="eft"] .section-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #c8aa6e;
+    text-shadow: 0 0 20px rgba(200, 170, 110, 0.2);
+    position: relative;
+}
+
+/* --- Decorative dividers --- */
+[data-theme="eft"] .divider {
+    opacity: 0.5;
+}
+
+[data-theme="eft"] .divider::before,
+[data-theme="eft"] .divider::after {
+    background: linear-gradient(90deg, transparent, rgba(200, 170, 110, 0.6), transparent);
+    height: 1px;
+}
+
+[data-theme="eft"] .divider-diamond {
+    width: 5px;
+    height: 5px;
+    background: #c8aa6e;
+    box-shadow: 0 0 4px rgba(200, 170, 110, 0.5);
+}
+
+/* --- Status dots glow --- */
+[data-theme="eft"] .account-status.has-session .status-dot {
+    box-shadow: 0 0 8px rgba(122, 179, 86, 0.6);
+    animation: pulse-green 2s ease-in-out infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 6px rgba(122, 179, 86, 0.5); }
+    50% { box-shadow: 0 0 12px rgba(122, 179, 86, 0.8); }
+}
+
+/* --- Scrollbar --- */
+[data-theme="eft"] ::-webkit-scrollbar {
+    width: 4px;
+}
+
+[data-theme="eft"] ::-webkit-scrollbar-thumb {
+    background: rgba(200, 170, 110, 0.25);
+    border-radius: 0;
+}
+
+[data-theme="eft"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(200, 170, 110, 0.5);
+}
+
+/* --- Settings footer --- */
+[data-theme="eft"] .settings-footer {
+    border-top-color: rgba(200, 170, 110, 0.12);
+}
+
+[data-theme="eft"] .powered-by a {
+    color: #c8aa6e;
+    text-shadow: 0 0 8px rgba(200, 170, 110, 0.2);
+}
+
+/* --- Update banner --- */
+[data-theme="eft"] .update-banner {
+    background: linear-gradient(90deg, rgba(154, 126, 72, 0.9) 0%, rgba(120, 96, 52, 0.9) 100%);
+    border-bottom: 1px solid rgba(200, 170, 110, 0.3);
+}
+
+/* --- Empty state icon glow --- */
+[data-theme="eft"] .empty-icon svg {
+    stroke: #c8aa6e;
+    filter: drop-shadow(0 0 8px rgba(200, 170, 110, 0.2));
+}
+
+/* --- Quit button subtle style --- */
+[data-theme="eft"] .btn-danger {
+    border-color: rgba(200, 80, 80, 0.3);
+}
+
+[data-theme="eft"] .btn-danger:hover {
+    box-shadow: 0 0 12px rgba(200, 80, 80, 0.2);
+}
+
+/* --- Checkbox styled --- */
+[data-theme="eft"] .form-checkbox {
+    accent-color: #c8aa6e;
+}
+
+/* --- Status messages --- */
+[data-theme="eft"] .status-message.success {
+    text-shadow: 0 0 8px rgba(122, 179, 86, 0.3);
+}
+
+[data-theme="eft"] .status-message.info {
+    text-shadow: 0 0 8px rgba(200, 170, 110, 0.3);
+}
+
+/* ============================================================
+   KILLA GIRL THEME — PREMIUM OVERRIDES
+   Anime Killa aesthetic: dark industrial + neon pink + 3-stripe motif
+   ============================================================ */
+
+/* --- Background image with dark overlay --- */
+[data-theme="killa"] body {
+    background:
+        linear-gradient(180deg, rgba(8, 6, 16, 0.80) 0%, rgba(8, 6, 16, 0.62) 40%, rgba(8, 6, 16, 0.82) 100%),
+        url('/images/bg-killa.jpg') center center / cover no-repeat fixed;
+    background-color: #0c0c14;
+}
+
+/* --- 3-Stripe diagonal overlay (Killa's signature) --- */
+[data-theme="killa"] body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.025;
+    background-image:
+        repeating-linear-gradient(
+            -55deg,
+            transparent,
+            transparent 40px,
+            rgba(232, 67, 147, 0.3) 40px,
+            rgba(232, 67, 147, 0.3) 42px,
+            transparent 42px,
+            transparent 46px,
+            rgba(232, 67, 147, 0.3) 46px,
+            rgba(232, 67, 147, 0.3) 48px,
+            transparent 48px,
+            transparent 52px,
+            rgba(232, 67, 147, 0.3) 52px,
+            rgba(232, 67, 147, 0.3) 54px,
+            transparent 54px,
+            transparent 200px
+        );
+}
+
+/* --- Subtle noise overlay --- */
+[data-theme="killa"] body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+}
+
+/* --- Vignette (purple tinted) --- */
+[data-theme="killa"] .vignette-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9997;
+    background: var(--killa-vignette);
+}
+
+/* --- Header --- */
+[data-theme="killa"] .app-header {
+    border-bottom: 1px solid rgba(232, 67, 147, 0.12);
+    background: linear-gradient(180deg, rgba(10, 10, 18, 0.94) 0%, rgba(10, 10, 18, 0.90) 100%);
+    backdrop-filter: blur(10px);
+}
+
+/* --- Tab active glow (neon pink) --- */
+[data-theme="killa"] .tab-btn.active {
+    text-shadow: 0 0 14px rgba(232, 67, 147, 0.6);
+}
+
+[data-theme="killa"] .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 15%;
+    right: 15%;
+    height: 8px;
+    background: radial-gradient(ellipse at center, rgba(232, 67, 147, 0.4) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* --- Account cards --- */
+[data-theme="killa"] .account-card {
+    border: 1px solid rgba(232, 67, 147, 0.06);
+    border-left: 2px solid rgba(232, 67, 147, 0.6);
+    background:
+        linear-gradient(135deg, rgba(232, 67, 147, 0.03) 0%, transparent 50%),
+        rgba(14, 14, 22, 0.78);
+    backdrop-filter: blur(4px);
+    clip-path: polygon(
+        0 0,
+        calc(100% - var(--card-corner)) 0,
+        100% var(--card-corner),
+        100% 100%,
+        0 100%
+    );
+}
+
+[data-theme="killa"] .account-card:hover {
+    border-color: rgba(232, 67, 147, 0.18);
+    background:
+        linear-gradient(135deg, rgba(232, 67, 147, 0.06) 0%, transparent 50%),
+        rgba(20, 20, 32, 0.85);
+    box-shadow:
+        0 0 24px rgba(232, 67, 147, 0.08),
+        inset 0 0 30px rgba(232, 67, 147, 0.02);
+}
+
+/* Corner cut marker */
+[data-theme="killa"] .account-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: calc(var(--card-corner) * 1.42);
+    height: 1px;
+    background: rgba(232, 67, 147, 0.4);
+    transform-origin: top right;
+    transform: rotate(-45deg) translateX(0.5px);
+    pointer-events: none;
+}
+
+/* --- 3 decorative stripes on card right side --- */
+[data-theme="killa"] .account-card::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: calc(var(--card-corner) + 8px);
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow:
+        5px 0 0 rgba(255, 255, 255, 0.06),
+        10px 0 0 rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+}
+
+/* --- Buttons with chamfered corners + neon glow --- */
+[data-theme="killa"] .btn {
+    clip-path: polygon(
+        0 0,
+        calc(100% - 7px) 0,
+        100% 7px,
+        100% 100%,
+        7px 100%,
+        0 calc(100% - 7px)
+    );
+    transition: all 0.2s, box-shadow 0.3s;
+}
+
+[data-theme="killa"] .btn-primary {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="killa"] .btn-primary:hover {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        0 0 20px rgba(232, 67, 147, 0.4),
+        0 0 40px rgba(232, 67, 147, 0.15);
+}
+
+[data-theme="killa"] .btn-secondary {
+    border-color: rgba(232, 67, 147, 0.3);
+}
+
+[data-theme="killa"] .btn-secondary:hover {
+    box-shadow:
+        0 0 16px rgba(232, 67, 147, 0.3),
+        0 0 32px rgba(232, 67, 147, 0.1);
+}
+
+/* --- Inputs --- */
+[data-theme="killa"] .form-input,
+[data-theme="killa"] .form-select {
+    border-color: rgba(232, 67, 147, 0.10);
+    background: rgba(8, 8, 16, 0.80);
+    backdrop-filter: blur(4px);
+}
+
+[data-theme="killa"] .form-input:focus,
+[data-theme="killa"] .form-select:focus {
+    border-color: rgba(232, 67, 147, 0.5);
+    box-shadow: 0 0 10px rgba(232, 67, 147, 0.15), inset 0 0 8px rgba(232, 67, 147, 0.04);
+}
+
+/* --- Section titles --- */
+[data-theme="killa"] .section-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #e84393;
+    text-shadow: 0 0 24px rgba(232, 67, 147, 0.3);
+    position: relative;
+}
+
+/* --- Decorative dividers (pink) --- */
+[data-theme="killa"] .divider {
+    opacity: 0.5;
+}
+
+[data-theme="killa"] .divider::before,
+[data-theme="killa"] .divider::after {
+    background: linear-gradient(90deg, transparent, rgba(232, 67, 147, 0.6), transparent);
+    height: 1px;
+}
+
+[data-theme="killa"] .divider-diamond {
+    width: 5px;
+    height: 5px;
+    background: #e84393;
+    box-shadow: 0 0 6px rgba(232, 67, 147, 0.6);
+}
+
+/* --- Status dots glow --- */
+[data-theme="killa"] .account-status.has-session .status-dot {
+    background: #00e676;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.6);
+    animation: pulse-neon-green 2s ease-in-out infinite;
+}
+
+@keyframes pulse-neon-green {
+    0%, 100% { box-shadow: 0 0 6px rgba(0, 230, 118, 0.5); }
+    50% { box-shadow: 0 0 14px rgba(0, 230, 118, 0.9); }
+}
+
+[data-theme="killa"] .account-status.no-session .status-dot {
+    box-shadow: 0 0 8px rgba(232, 164, 53, 0.5);
+}
+
+/* --- Scrollbar --- */
+[data-theme="killa"] ::-webkit-scrollbar {
+    width: 4px;
+}
+
+[data-theme="killa"] ::-webkit-scrollbar-thumb {
+    background: rgba(232, 67, 147, 0.25);
+    border-radius: 0;
+}
+
+[data-theme="killa"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(232, 67, 147, 0.5);
+}
+
+/* --- Settings footer --- */
+[data-theme="killa"] .settings-footer {
+    border-top-color: rgba(232, 67, 147, 0.10);
+}
+
+[data-theme="killa"] .powered-by a {
+    color: #e84393;
+    text-shadow: 0 0 10px rgba(232, 67, 147, 0.25);
+}
+
+/* --- Update banner --- */
+[data-theme="killa"] .update-banner {
+    background: linear-gradient(90deg, rgba(184, 48, 122, 0.9) 0%, rgba(140, 36, 94, 0.9) 100%);
+    border-bottom: 1px solid rgba(232, 67, 147, 0.3);
+}
+
+/* --- Empty state icon --- */
+[data-theme="killa"] .empty-icon svg {
+    stroke: #e84393;
+    filter: drop-shadow(0 0 10px rgba(232, 67, 147, 0.3));
+}
+
+/* --- Quit/danger button --- */
+[data-theme="killa"] .btn-danger {
+    border-color: rgba(240, 80, 80, 0.3);
+}
+
+[data-theme="killa"] .btn-danger:hover {
+    box-shadow: 0 0 14px rgba(240, 80, 80, 0.25);
+}
+
+/* --- Checkbox --- */
+[data-theme="killa"] .form-checkbox {
+    accent-color: #e84393;
+}
+
+/* --- Status messages --- */
+[data-theme="killa"] .status-message.success {
+    text-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+}
+
+[data-theme="killa"] .status-message.info {
+    text-shadow: 0 0 10px rgba(232, 67, 147, 0.3);
+}

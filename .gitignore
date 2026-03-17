@@ -10,6 +10,7 @@ RELEASE*/
 
 # v2 Go rewrite - tracked
 !v2/
+!v2/frontend/dist/
 # Ignore build artifacts in v2
 v2/*.exe
 v2/*.syso
