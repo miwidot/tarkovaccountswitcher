@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"tarkov-account-switcher/internal/config"
-	"tarkov-account-switcher/internal/launcher"
 )
 
 var (
@@ -73,19 +72,8 @@ func StartWatcher(accountID, expectedEmail string) {
 			rt, _ := launcherSettings["rt"].(string)
 
 			if login == expectedEmail && at != "" && rt != "" {
-				// Session detected - capture auth fields, selectedGame AND ingame background
-				authSession := map[string]interface{}{
-					"login":             launcherSettings["login"],
-					"at":                launcherSettings["at"],
-					"rt":                launcherSettings["rt"],
-					"atet":              launcherSettings["atet"],
-					"sysInfCheck":       launcherSettings["sysInfCheck"],
-					"keepLoggedIn":      true,
-					"saveLogin":         true,
-					"selectedGame":      launcherSettings["selectedGame"],
-					"environmentUiType": launcher.ReadEnvironmentUiType(),
-				}
-				sessionData, err := json.Marshal(authSession)
+				// Session detected - capture auth fields
+				sessionData, err := json.Marshal(BuildAuthSession(launcherSettings))
 				if err != nil {
 					continue
 				}

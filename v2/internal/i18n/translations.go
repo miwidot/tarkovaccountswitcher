@@ -51,6 +51,14 @@ const (
 	// Theme
 	LabelTheme = "labelTheme"
 
+	// Switch Result Messages (used by backend)
+	SwitchAutoLogin  = "switchAutoLogin"
+	SwitchManualLogin = "switchManualLogin"
+
+	// Tray Menu
+	TrayOpen = "trayOpen"
+	TrayQuit = "trayQuit"
+
 	// Status Messages
 	StatusFillFields     = "statusFillFields"
 	StatusAccountAdded   = "statusAccountAdded"
@@ -106,6 +114,14 @@ var translations = map[string]map[string]string{
 		StreamerModeHelp:    "Versteckt Email-Adressen mit ****",
 		LabelTheme:          "Design / Theme",
 
+		// Switch Result Messages
+		SwitchAutoLogin:  "Launcher gestartet - Auto-Login aktiv!",
+		SwitchManualLogin: "Bitte einloggen - Session wird automatisch gespeichert!",
+
+		// Tray Menu
+		TrayOpen: "Öffnen",
+		TrayQuit: "Beenden",
+
 		// Status Messages
 		StatusFillFields:     "Bitte fülle alle Felder aus",
 		StatusAccountAdded:   "✅ Account hinzugefügt!\n\nLauncher startet jetzt...\nBitte einloggen - Session wird automatisch gespeichert!",
@@ -158,6 +174,14 @@ var translations = map[string]map[string]string{
 		LabelStreamerMode:   "Streamer Mode",
 		StreamerModeHelp:    "Hides email addresses with ****",
 		LabelTheme:          "Theme / Design",
+
+		// Switch Result Messages
+		SwitchAutoLogin:  "Launcher started - Auto-login active!",
+		SwitchManualLogin: "Please login - session will be saved automatically!",
+
+		// Tray Menu
+		TrayOpen: "Open",
+		TrayQuit: "Quit",
 
 		// Status Messages
 		StatusFillFields:     "Please fill all fields",

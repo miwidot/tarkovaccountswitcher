@@ -7,16 +7,18 @@ import (
 	"time"
 
 	"tarkov-account-switcher/internal/config"
+	"tarkov-account-switcher/internal/i18n"
 	"tarkov-account-switcher/internal/launcher"
 )
 
 // Account represents a saved Tarkov account
 type Account struct {
-	ID              string          `json:"id"`
-	Name            string          `json:"name"`
-	Email           string          `json:"email"`
-	LauncherSession json.RawMessage `json:"launcherSession"`
-	SessionCaptured string          `json:"sessionCaptured,omitempty"`
+	ID               string          `json:"id"`
+	Name             string          `json:"name"`
+	Email            string          `json:"email"`
+	LauncherSession  json.RawMessage `json:"launcherSession,omitempty"`  // legacy plaintext (migrated on load)
+	EncryptedSession string          `json:"encryptedSession,omitempty"` // AES-256-CBC encrypted session
+	SessionCaptured  string          `json:"sessionCaptured,omitempty"`
 }
 
 // SwitchResult holds the result of a switch operation
@@ -29,7 +31,7 @@ type SwitchResult struct {
 	Error       string
 }
 
-// GetAccounts loads all accounts from file
+// GetAccounts loads all accounts from file, decrypting sessions
 func GetAccounts() ([]Account, error) {
 	paths := config.GetPaths()
 
@@ -46,14 +48,51 @@ func GetAccounts() ([]Account, error) {
 		return nil, err
 	}
 
+	needsMigration := false
+	for i := range accounts {
+		// Migrate legacy plaintext sessions to encrypted
+		if len(accounts[i].LauncherSession) > 0 && accounts[i].EncryptedSession == "" {
+			encrypted, err := Encrypt(string(accounts[i].LauncherSession))
+			if err == nil {
+				accounts[i].EncryptedSession = encrypted
+				accounts[i].LauncherSession = nil
+				needsMigration = true
+			}
+		}
+		// Decrypt encrypted session into LauncherSession for in-memory use
+		if accounts[i].EncryptedSession != "" && len(accounts[i].LauncherSession) == 0 {
+			decrypted, err := Decrypt(accounts[i].EncryptedSession)
+			if err == nil {
+				accounts[i].LauncherSession = json.RawMessage(decrypted)
+			}
+		}
+	}
+
+	if needsMigration {
+		saveAccounts(accounts)
+	}
+
 	return accounts, nil
 }
 
-// saveAccounts saves all accounts to file
+// saveAccounts saves all accounts to file with encrypted sessions
 func saveAccounts(accounts []Account) error {
 	paths := config.GetPaths()
 
-	data, err := json.MarshalIndent(accounts, "", "  ")
+	// Create a copy for disk — encrypt sessions, clear plaintext
+	diskAccounts := make([]Account, len(accounts))
+	for i, acc := range accounts {
+		diskAccounts[i] = acc
+		if len(acc.LauncherSession) > 0 {
+			encrypted, err := Encrypt(string(acc.LauncherSession))
+			if err == nil {
+				diskAccounts[i].EncryptedSession = encrypted
+			}
+		}
+		diskAccounts[i].LauncherSession = nil // never write plaintext to disk
+	}
+
+	data, err := json.MarshalIndent(diskAccounts, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -203,7 +242,7 @@ func SwitchAccount(id string) *SwitchResult {
 			AccountName: account.Name,
 			Email:       account.Email,
 			HasSession:  true,
-			Message:     "Launcher gestartet - Auto-Login aktiv!",
+			Message:     i18n.T(i18n.SwitchAutoLogin),
 		}
 	}
 
@@ -238,7 +277,7 @@ func SwitchAccount(id string) *SwitchResult {
 		AccountName: account.Name,
 		Email:       account.Email,
 		HasSession:  false,
-		Message:     "Bitte einloggen - Session wird automatisch gespeichert!",
+		Message:     i18n.T(i18n.SwitchManualLogin),
 	}
 }
 
@@ -273,20 +312,7 @@ func SaveCurrentAccountSession() {
 
 	for i := range accounts {
 		if accounts[i].Email == login {
-			// Save auth-related fields, selectedGame AND ingame background
-			// Always force keepLoggedIn=true so sessions persist across restarts
-			authSession := map[string]interface{}{
-				"login":             launcherSettings["login"],
-				"at":                launcherSettings["at"],
-				"rt":                launcherSettings["rt"],
-				"atet":              launcherSettings["atet"],
-				"sysInfCheck":       launcherSettings["sysInfCheck"],
-				"keepLoggedIn":      true,
-				"saveLogin":         true,
-				"selectedGame":      launcherSettings["selectedGame"],
-				"environmentUiType": launcher.ReadEnvironmentUiType(),
-			}
-			sessionData, _ := json.Marshal(authSession)
+			sessionData, _ := json.Marshal(BuildAuthSession(launcherSettings))
 			accounts[i].LauncherSession = sessionData
 			accounts[i].SessionCaptured = time.Now().Format(time.RFC3339)
 			saveAccounts(accounts)
@@ -297,5 +323,21 @@ func SaveCurrentAccountSession() {
 
 // HasSession checks if an account has a saved session
 func (a *Account) HasSession() bool {
-	return a.LauncherSession != nil && len(a.LauncherSession) > 0
+	return (a.LauncherSession != nil && len(a.LauncherSession) > 0) || a.EncryptedSession != ""
+}
+
+// BuildAuthSession creates the session map from launcher settings.
+// Single source of truth for which fields to capture.
+func BuildAuthSession(launcherSettings map[string]interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"login":             launcherSettings["login"],
+		"at":                launcherSettings["at"],
+		"rt":                launcherSettings["rt"],
+		"atet":              launcherSettings["atet"],
+		"sysInfCheck":       launcherSettings["sysInfCheck"],
+		"keepLoggedIn":      true,
+		"saveLogin":         true,
+		"selectedGame":      launcherSettings["selectedGame"],
+		"environmentUiType": launcher.ReadEnvironmentUiType(),
+	}
 }

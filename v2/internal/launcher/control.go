@@ -9,16 +9,47 @@ import (
 	"tarkov-account-switcher/internal/config"
 )
 
-// KillLauncher kills the BSG Launcher process
+// KillLauncher kills the BSG Launcher process and waits for it to exit
 func KillLauncher() error {
-	// Kill BsgLauncher process - ignore errors as process might not be running
 	cmd := exec.Command("taskkill", "/F", "/IM", "BsgLauncher.exe", "/T")
-	cmd.Run() // Ignore error
+	cmd.Run() // Ignore error - process might not be running
 
-	// Wait a bit to ensure process is killed
-	time.Sleep(1500 * time.Millisecond)
+	// Poll for process exit instead of fixed sleep
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		check := exec.Command("tasklist", "/FI", "IMAGENAME eq BsgLauncher.exe", "/NH")
+		out, _ := check.Output()
+		if len(out) == 0 || !contains(out, "BsgLauncher") {
+			return nil
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
 
 	return nil
+}
+
+func contains(data []byte, substr string) bool {
+	return len(data) > 0 && len(substr) > 0 && bytesContains(data, []byte(substr))
+}
+
+func bytesContains(haystack, needle []byte) bool {
+	return len(haystack) >= len(needle) && indexOf(haystack, needle) >= 0
+}
+
+func indexOf(haystack, needle []byte) int {
+	for i := 0; i <= len(haystack)-len(needle); i++ {
+		match := true
+		for j := range needle {
+			if haystack[i+j] != needle[j] {
+				match = false
+				break
+			}
+		}
+		if match {
+			return i
+		}
+	}
+	return -1
 }
 
 // StartLauncher starts the BSG Launcher
@@ -40,31 +71,20 @@ var OnLauncherStarted func()
 // ClearGameCache clears EFT/Arena cache files to force fresh data from server
 // This does NOT delete our saved account sessions - only game cache
 func ClearGameCache() {
-	// Get paths
 	tempDir := os.TempDir()
 	localAppData := os.Getenv("LOCALAPPDATA")
 
-	// Get launcher installation directory from settings
 	settings := config.GetSettings()
 	launcherDir := filepath.Dir(settings.LauncherPath)
 
-	// Cache directories to clear (NOT the entire CefCache - that breaks background loading)
 	cacheDirs := []string{
-		// Temp folder caches
 		filepath.Join(tempDir, "Battlestate Games", "EscapeFromTarkov"),
 		filepath.Join(tempDir, "Battlestate Games", "EscapeFromTarkovArena"),
-
-		// Only clear the image/resource cache inside CefCache, not the whole folder
 		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "Cache"),
-
-		// Launcher installation cache
 		filepath.Join(launcherDir, "Temp"),
 	}
 
-	// Remove directories
 	for _, dir := range cacheDirs {
-		if _, err := os.Stat(dir); err == nil {
-			os.RemoveAll(dir)
-		}
+		os.RemoveAll(dir)
 	}
 }

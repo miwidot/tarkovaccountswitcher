@@ -25,6 +25,7 @@ type Paths struct {
 }
 
 var appPaths *Paths
+var cachedSettings *Settings
 
 // GetPaths returns the application paths, initializing them if necessary
 func GetPaths() *Paths {
@@ -56,8 +57,12 @@ func EnsureDataDir() error {
 	return nil
 }
 
-// GetSettings loads settings from file or returns defaults
+// GetSettings returns cached settings or loads from file
 func GetSettings() *Settings {
+	if cachedSettings != nil {
+		return cachedSettings
+	}
+
 	paths := GetPaths()
 
 	settings := &Settings{
@@ -67,14 +72,16 @@ func GetSettings() *Settings {
 
 	data, err := os.ReadFile(paths.SettingsFile)
 	if err != nil {
+		cachedSettings = settings
 		return settings
 	}
 
 	json.Unmarshal(data, settings)
+	cachedSettings = settings
 	return settings
 }
 
-// SaveSettings saves settings to file
+// SaveSettings saves settings to file and updates cache
 func SaveSettings(settings *Settings) error {
 	paths := GetPaths()
 
@@ -83,7 +90,12 @@ func SaveSettings(settings *Settings) error {
 		return err
 	}
 
-	return os.WriteFile(paths.SettingsFile, data, 0644)
+	if err := os.WriteFile(paths.SettingsFile, data, 0644); err != nil {
+		return err
+	}
+
+	cachedSettings = settings
+	return nil
 }
 
 // SetLanguage sets and saves the language setting

@@ -9,6 +9,8 @@ import (
 	"sync"
 	"syscall"
 	"unsafe"
+
+	"tarkov-account-switcher/internal/i18n"
 )
 
 // ============================================================
@@ -174,8 +176,8 @@ func showTrayContextMenu(hwnd uintptr) {
 		return
 	}
 
-	openText, _ := syscall.UTF16PtrFromString("Open / \u00d6ffnen")
-	quitText, _ := syscall.UTF16PtrFromString("Quit / Beenden")
+	openText, _ := syscall.UTF16PtrFromString(i18n.T(i18n.TrayOpen))
+	quitText, _ := syscall.UTF16PtrFromString(i18n.T(i18n.TrayQuit))
 
 	procAppendMenuW.Call(hMenu, mfString, idmOpen, uintptr(unsafe.Pointer(openText)))
 	procAppendMenuW.Call(hMenu, mfSeparator, 0, 0)
