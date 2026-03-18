@@ -1,5 +1,19 @@
 # Changelog - Tarkov Account Switcher v2
 
+## v2.0.5 (2026-03-18)
+
+### Code Quality & Security
+- Encrypt account sessions (AES-256-CBC) on disk — auth tokens no longer stored as plaintext
+- Auto-migrate existing plaintext sessions on first load
+- Cache settings in memory instead of reading from disk on every call
+- Poll for launcher exit instead of fixed 1.5s sleep (faster UI response)
+- i18n: switch result messages and tray menu now properly translated
+- Remove duplicated session capture code (single BuildAuthSession function)
+- Remove unused singleinstance package (Wails built-in SingleInstanceLock)
+- Thread-safe path initialization via sync.Once
+
+---
+
 ## v2.0.4 (2026-03-17)
 
 ### Session Persistence Fix

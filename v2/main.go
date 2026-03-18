@@ -2,8 +2,6 @@ package main
 
 import (
 	"embed"
-	"os"
-	"path/filepath"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -27,12 +25,6 @@ func main() {
 	// Initialize encryption key
 	if _, err := accounts.GetOrCreateKey(); err != nil {
 		panic(err)
-	}
-
-	// Clear WebView2 cache to prevent stale frontend state
-	if appData := os.Getenv("APPDATA"); appData != "" {
-		webviewCache := filepath.Join(appData, "Tarkov Account Switcher.exe", "EBWebView")
-		os.RemoveAll(webviewCache)
 	}
 
 	app := NewApp()

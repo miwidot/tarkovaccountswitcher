@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // Settings holds the application settings
@@ -24,24 +25,27 @@ type Paths struct {
 	LauncherSettingsPath string
 }
 
-var appPaths *Paths
-var cachedSettings *Settings
+var (
+	appPaths       *Paths
+	pathsOnce      sync.Once
+	cachedSettings *Settings
+)
 
-// GetPaths returns the application paths, initializing them if necessary
+// GetPaths returns the application paths, initializing them exactly once
 func GetPaths() *Paths {
-	if appPaths == nil {
+	pathsOnce.Do(func() {
 		appData := os.Getenv("APPDATA")
 		dataDir := filepath.Join(appData, "TarkovAccountSwitcher")
 
 		appPaths = &Paths{
-			DataDir:            dataDir,
-			AccountsFile:       filepath.Join(dataDir, "accounts.json"),
-			SettingsFile:       filepath.Join(dataDir, "settings.json"),
-			KeyFile:            filepath.Join(dataDir, ".key"),
-			TempFolder:         filepath.Join(dataDir, "temp"),
+			DataDir:              dataDir,
+			AccountsFile:         filepath.Join(dataDir, "accounts.json"),
+			SettingsFile:         filepath.Join(dataDir, "settings.json"),
+			KeyFile:              filepath.Join(dataDir, ".key"),
+			TempFolder:           filepath.Join(dataDir, "temp"),
 			LauncherSettingsPath: filepath.Join(appData, "Battlestate Games", "BsgLauncher", "settings"),
 		}
-	}
+	})
 	return appPaths
 }
 

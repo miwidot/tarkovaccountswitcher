@@ -1,6 +1,7 @@
 package launcher
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,37 +20,13 @@ func KillLauncher() error {
 	for time.Now().Before(deadline) {
 		check := exec.Command("tasklist", "/FI", "IMAGENAME eq BsgLauncher.exe", "/NH")
 		out, _ := check.Output()
-		if len(out) == 0 || !contains(out, "BsgLauncher") {
+		if !bytes.Contains(out, []byte("BsgLauncher")) {
 			return nil
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
 
 	return nil
-}
-
-func contains(data []byte, substr string) bool {
-	return len(data) > 0 && len(substr) > 0 && bytesContains(data, []byte(substr))
-}
-
-func bytesContains(haystack, needle []byte) bool {
-	return len(haystack) >= len(needle) && indexOf(haystack, needle) >= 0
-}
-
-func indexOf(haystack, needle []byte) int {
-	for i := 0; i <= len(haystack)-len(needle); i++ {
-		match := true
-		for j := range needle {
-			if haystack[i+j] != needle[j] {
-				match = false
-				break
-			}
-		}
-		if match {
-			return i
-		}
-	}
-	return -1
 }
 
 // StartLauncher starts the BSG Launcher
