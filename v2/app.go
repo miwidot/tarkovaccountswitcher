@@ -161,6 +161,7 @@ type SettingsDTO struct {
 	Language     string `json:"language"`
 	StreamerMode bool   `json:"streamerMode"`
 	Theme        string `json:"theme"`
+	AutoStart    bool   `json:"autoStart"`
 }
 
 // GetSettings returns current settings
@@ -171,6 +172,7 @@ func (a *App) GetSettings() SettingsDTO {
 		Language:     i18n.GetLanguage(),
 		StreamerMode: s.StreamerMode,
 		Theme:        s.Theme,
+		AutoStart:    s.AutoStart,
 	}
 }
 
@@ -192,6 +194,14 @@ func (a *App) SetLauncherPath(path string) error {
 // SetStreamerMode toggles streamer mode
 func (a *App) SetStreamerMode(enabled bool) error {
 	return config.SetStreamerMode(enabled)
+}
+
+// SetAutoStart enables or disables Windows autostart
+func (a *App) SetAutoStart(enabled bool) error {
+	if err := config.ApplyAutoStart(enabled); err != nil {
+		return err
+	}
+	return config.SetAutoStart(enabled)
 }
 
 // SetTheme saves the theme preference
@@ -222,6 +232,7 @@ func (a *App) GetAllTranslations() map[string]string {
 		i18n.BtnSwitch, i18n.BtnDelete, i18n.ConfirmDelete,
 		i18n.SettingsTitle, i18n.LabelLanguage, i18n.LabelLauncherPath,
 		i18n.PlaceholderLauncher, i18n.BtnBrowse, i18n.BtnSave,
+		i18n.LabelAutoStart, i18n.AutoStartHelp, i18n.BtnQuit,
 		i18n.LabelStreamerMode, i18n.StreamerModeHelp,
 		i18n.LabelTheme,
 		i18n.StatusFillFields, i18n.StatusAccountAdded, i18n.StatusAccountDeleted,

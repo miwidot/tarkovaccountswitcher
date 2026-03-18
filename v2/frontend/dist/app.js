@@ -126,8 +126,11 @@ async function applyTranslations() {
     setPlaceholder('settings-path-input', t('placeholderLauncherPath'));
     setText('settings-browse-btn', t('btnBrowse'));
     setText('settings-save-btn', t('btnSave'));
+    setText('settings-autostart-label', t('labelAutoStart'));
+    setText('settings-autostart-help', t('autoStartHelp'));
     setText('settings-streamer-label', t('labelStreamerMode'));
     setText('settings-streamer-help', t('streamerModeHelp'));
+    setText('settings-quit-btn', t('btnQuit'));
 
     // Version
     try {
@@ -290,6 +293,7 @@ function setupEventListeners() {
     document.getElementById('settings-theme-select').addEventListener('change', onThemeChange);
     document.getElementById('settings-browse-btn').addEventListener('click', onBrowsePath);
     document.getElementById('settings-save-btn').addEventListener('click', onSavePath);
+    document.getElementById('settings-autostart-check').addEventListener('change', onAutoStartToggle);
     document.getElementById('settings-streamer-check').addEventListener('change', onStreamerToggle);
     document.getElementById('settings-quit-btn').addEventListener('click', onQuitApp);
 
@@ -345,6 +349,7 @@ async function loadSettingsValues() {
 
         document.getElementById('settings-lang-select').value = settings.language;
         document.getElementById('settings-path-input').value = settings.launcherPath;
+        document.getElementById('settings-autostart-check').checked = settings.autoStart;
         document.getElementById('settings-streamer-check').checked = settings.streamerMode;
 
         // Set theme dropdown
@@ -404,6 +409,20 @@ async function onSavePath() {
     } catch (e) {
         statusEl.textContent = '\u274C ' + e;
         statusEl.className = 'status-message error';
+    }
+}
+
+async function onAutoStartToggle() {
+    const checked = document.getElementById('settings-autostart-check').checked;
+    const statusEl = document.getElementById('settings-status');
+
+    try {
+        await window.go.main.App.SetAutoStart(checked);
+        statusEl.textContent = '\u2713 Autostart ' + (checked ? 'ON' : 'OFF');
+        statusEl.className = 'status-message success';
+    } catch (e) {
+        console.error('Autostart toggle failed:', e);
+        document.getElementById('settings-autostart-check').checked = !checked;
     }
 }
 

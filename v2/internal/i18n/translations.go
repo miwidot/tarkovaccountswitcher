@@ -51,6 +51,13 @@ const (
 	// Theme
 	LabelTheme = "labelTheme"
 
+	// Autostart
+	LabelAutoStart = "labelAutoStart"
+	AutoStartHelp  = "autoStartHelp"
+
+	// Quit
+	BtnQuit = "btnQuit"
+
 	// Switch Result Messages (used by backend)
 	SwitchAutoLogin  = "switchAutoLogin"
 	SwitchManualLogin = "switchManualLogin"
@@ -113,6 +120,9 @@ var translations = map[string]map[string]string{
 		LabelStreamerMode:   "Streamer Modus",
 		StreamerModeHelp:    "Versteckt Email-Adressen mit ****",
 		LabelTheme:          "Design / Theme",
+		LabelAutoStart:      "Autostart mit Windows",
+		AutoStartHelp:       "Startet die App automatisch beim Windows-Login",
+		BtnQuit:             "Beenden",
 
 		// Switch Result Messages
 		SwitchAutoLogin:  "Launcher gestartet - Auto-Login aktiv!",
@@ -174,6 +184,9 @@ var translations = map[string]map[string]string{
 		LabelStreamerMode:   "Streamer Mode",
 		StreamerModeHelp:    "Hides email addresses with ****",
 		LabelTheme:          "Theme / Design",
+		LabelAutoStart:      "Start with Windows",
+		AutoStartHelp:       "Automatically start the app on Windows login",
+		BtnQuit:             "Quit",
 
 		// Switch Result Messages
 		SwitchAutoLogin:  "Launcher started - Auto-login active!",

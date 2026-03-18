@@ -13,6 +13,7 @@ type Settings struct {
 	Language     string `json:"language"`
 	StreamerMode bool   `json:"streamerMode"`
 	Theme        string `json:"theme"`
+	AutoStart    bool   `json:"autoStart"`
 }
 
 // Paths holds all the important file paths for the application
@@ -127,6 +128,13 @@ func SetStreamerMode(enabled bool) error {
 func SetTheme(id string) error {
 	settings := GetSettings()
 	settings.Theme = id
+	return SaveSettings(settings)
+}
+
+// SetAutoStart sets and saves the autostart setting
+func SetAutoStart(enabled bool) error {
+	settings := GetSettings()
+	settings.AutoStart = enabled
 	return SaveSettings(settings)
 }
 

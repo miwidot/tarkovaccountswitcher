@@ -25,6 +25,7 @@ export namespace main {
 	    language: string;
 	    streamerMode: boolean;
 	    theme: string;
+	    autoStart: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new SettingsDTO(source);
@@ -36,6 +37,7 @@ export namespace main {
 	        this.language = source["language"];
 	        this.streamerMode = source["streamerMode"];
 	        this.theme = source["theme"];
+	        this.autoStart = source["autoStart"];
 	    }
 	}
 	export class SwitchResultDTO {
