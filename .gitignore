@@ -58,3 +58,7 @@ temp/
 
 # Claude Code
 .claude/
+
+*.cul
+
+*.url
