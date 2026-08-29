@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"sync"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"tarkov-account-switcher/internal/i18n"
@@ -122,12 +123,22 @@ var (
 	procGetWindowRect       = user32dll.NewProc("GetWindowRect")
 	procSetWindowPos        = user32dll.NewProc("SetWindowPos")
 	procGetDpiForWindow     = user32dll.NewProc("GetDpiForWindow")
+	procMessageBoxW         = user32dll.NewProc("MessageBoxW")
 )
 
 const (
 	swpNoMove     = 0x0002
 	swpNoZOrder   = 0x0004
 	swpNoActivate = 0x0010
+
+	wmSetIcon = 0x0080
+	iconSmall = 0
+	iconBig   = 1
+
+	mbYesNo        = 0x00000004
+	mbIconQuestion = 0x00000020
+	mbDefButton2   = 0x00000100
+	idYes          = 6
 )
 
 type winRect struct {
@@ -359,88 +370,130 @@ func stopTray() {
 }
 
 // ============================================================
-// Window icon setter — finds the Wails window and sets its icon
-// via WM_SETICON, bypassing the unreliable resource system.
+// Application icon — cached and applied to all process windows
+// (main window, MessageBox, file dialogs, etc.)
 // ============================================================
 
-const (
-	wmSetIcon  = 0x0080
-	iconSmall  = 0
-	iconBig    = 1
+var (
+	appIconOnce  sync.Once
+	appIconBig   uintptr
+	appIconSmall uintptr
+
+	enumWindowsCallbackOnce sync.Once
+	enumWindowsCallback     uintptr
+	enumWindowsTargetPID    uintptr
 )
 
-// setWindowIcon finds the main application window and sets its icon.
-// Must be called after the Wails window is created (e.g., in domReady).
-func setWindowIcon(iconData []byte) {
+func ensureAppIcons(iconData []byte) {
 	if len(iconData) == 0 {
 		return
 	}
-
-	go func() {
-		// Write icon to temp file
+	appIconOnce.Do(func() {
 		tmpDir := filepath.Join(os.TempDir(), "TarkovAccountSwitcher")
-		os.MkdirAll(tmpDir, 0755)
-		iconPath := filepath.Join(tmpDir, "window.ico")
+		_ = os.MkdirAll(tmpDir, 0755)
+		iconPath := filepath.Join(tmpDir, "app.ico")
 		if err := os.WriteFile(iconPath, iconData, 0644); err != nil {
 			return
 		}
-
 		iconPathW, _ := syscall.UTF16PtrFromString(iconPath)
 
-		// Load big icon (32x32 for taskbar/alt-tab)
-		hIconBig, _, _ := procLoadImageW.Call(
-			0,
-			uintptr(unsafe.Pointer(iconPathW)),
-			imageIcon,
-			32, 32,
-			lrLoadFromFile,
+		appIconBig, _, _ = procLoadImageW.Call(
+			0, uintptr(unsafe.Pointer(iconPathW)), imageIcon, 32, 32, lrLoadFromFile,
 		)
-
-		// Load small icon (16x16 for title bar/task manager)
-		hIconSmall, _, _ := procLoadImageW.Call(
-			0,
-			uintptr(unsafe.Pointer(iconPathW)),
-			imageIcon,
-			16, 16,
-			lrLoadFromFile,
+		appIconSmall, _, _ = procLoadImageW.Call(
+			0, uintptr(unsafe.Pointer(iconPathW)), imageIcon, 16, 16, lrLoadFromFile,
 		)
+	})
+}
 
-		if hIconBig == 0 && hIconSmall == 0 {
+func applyIconToHwnd(hwnd uintptr) {
+	if hwnd == 0 {
+		return
+	}
+	if appIconBig != 0 {
+		procSendMessageW.Call(hwnd, wmSetIcon, iconBig, appIconBig)
+	}
+	if appIconSmall != 0 {
+		procSendMessageW.Call(hwnd, wmSetIcon, iconSmall, appIconSmall)
+	}
+}
+
+func enumWindowsApplyIconProc(hwnd uintptr, _ uintptr) uintptr {
+	var pid uint32
+	procGetWindowThreadProcessId.Call(hwnd, uintptr(unsafe.Pointer(&pid)))
+	if uintptr(pid) != enumWindowsTargetPID {
+		return 1
+	}
+	applyIconToHwnd(hwnd)
+	return 1
+}
+
+func applyIconsToAllProcessWindows() {
+	if appIconBig == 0 && appIconSmall == 0 {
+		return
+	}
+	enumWindowsCallbackOnce.Do(func() {
+		enumWindowsCallback = syscall.NewCallback(enumWindowsApplyIconProc)
+	})
+	pid, _, _ := procGetCurrentProcessId.Call()
+	enumWindowsTargetPID = pid
+	procEnumWindows.Call(enumWindowsCallback, 0)
+}
+
+// runWithDialogIconRefresh keeps WM_SETICON applied while a blocking native
+// dialog is open (MessageBox, IFileDialog, etc.).
+func runWithDialogIconRefresh(iconData []byte, fn func()) {
+	ensureAppIcons(iconData)
+	done := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(50 * time.Millisecond)
+		defer ticker.Stop()
+		applyIconsToAllProcessWindows()
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				applyIconsToAllProcessWindows()
+			}
+		}
+	}()
+	fn()
+	close(done)
+	applyIconsToAllProcessWindows()
+}
+
+// showQuestionDialog shows a Yes/No MessageBox with the app icon on the title bar.
+func showQuestionDialog(iconData []byte, title, message string) (bool, error) {
+	var confirmed bool
+	runWithDialogIconRefresh(iconData, func() {
+		applyIconsToAllProcessWindows()
+		hwnd := findMainWindow()
+
+		titlePtr, err := syscall.UTF16PtrFromString(title)
+		if err != nil {
+			return
+		}
+		msgPtr, err := syscall.UTF16PtrFromString(message)
+		if err != nil {
 			return
 		}
 
-		// Find the Wails window: enumerate all windows belonging to our process
-		ourPid, _, _ := procGetCurrentProcessId.Call()
+		flags := uintptr(mbYesNo | mbIconQuestion | mbDefButton2)
+		ret, _, _ := procMessageBoxW.Call(
+			hwnd,
+			uintptr(unsafe.Pointer(msgPtr)),
+			uintptr(unsafe.Pointer(titlePtr)),
+			flags,
+		)
+		confirmed = ret == idYes
+	})
+	return confirmed, nil
+}
 
-		enumCallback := syscall.NewCallback(func(hwnd uintptr, lParam uintptr) uintptr {
-			var pid uint32
-			procGetWindowThreadProcessId.Call(hwnd, uintptr(unsafe.Pointer(&pid)))
-
-			if uintptr(pid) != ourPid {
-				return 1 // continue
-			}
-
-			// Check if visible
-			visible, _, _ := procIsWindowVisible.Call(hwnd)
-			if visible == 0 {
-				return 1 // continue
-			}
-
-			// Check class name — Wails uses a webview class
-			var className [256]uint16
-			procGetClassNameW.Call(hwnd, uintptr(unsafe.Pointer(&className[0])), 256)
-
-			// Set the icon on this window
-			if hIconBig != 0 {
-				procSendMessageW.Call(hwnd, wmSetIcon, iconBig, hIconBig)
-			}
-			if hIconSmall != 0 {
-				procSendMessageW.Call(hwnd, wmSetIcon, iconSmall, hIconSmall)
-			}
-
-			return 1 // continue to set on all our windows
-		})
-
-		procEnumWindows.Call(enumCallback, 0)
-	}()
+// setWindowIcon loads the embedded ICO and applies it to every HWND owned by
+// this process. Must be called after the Wails window is created (domReady).
+func setWindowIcon(iconData []byte) {
+	ensureAppIcons(iconData)
+	go applyIconsToAllProcessWindows()
 }

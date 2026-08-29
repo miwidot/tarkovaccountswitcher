@@ -2,9 +2,11 @@ package accounts
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -164,6 +166,8 @@ func GetAccountByID(id string) (*Account, error) {
 
 // AddAccount adds a new account and kicks off the login flow.
 func AddAccount(name, email string) (string, error) {
+	name = strings.TrimSpace(name)
+	email = strings.TrimSpace(email)
 	newAccount := Account{
 		ID:    strconv.FormatInt(time.Now().UnixMilli(), 10),
 		Name:  name,
@@ -171,6 +175,11 @@ func AddAccount(name, email string) (string, error) {
 	}
 
 	if err := mutate(func(accs []Account) ([]Account, error) {
+		for _, acc := range accs {
+			if strings.EqualFold(strings.TrimSpace(acc.Email), email) {
+				return nil, errors.New(i18n.T(i18n.ErrDuplicateEmail))
+			}
+		}
 		return append(accs, newAccount), nil
 	}); err != nil {
 		return "", err
@@ -206,6 +215,33 @@ func DeleteAccount(id string) error {
 			}
 		}
 		return filtered, nil
+	})
+}
+
+// ReorderAccounts persists accounts in the given ID order.
+func ReorderAccounts(orderedIDs []string) error {
+	return mutate(func(accs []Account) ([]Account, error) {
+		if len(orderedIDs) != len(accs) {
+			return nil, fmt.Errorf("reorder: expected %d ids, got %d", len(accs), len(orderedIDs))
+		}
+		byID := make(map[string]Account, len(accs))
+		for _, acc := range accs {
+			byID[acc.ID] = acc
+		}
+		reordered := make([]Account, 0, len(orderedIDs))
+		seen := make(map[string]bool, len(orderedIDs))
+		for _, id := range orderedIDs {
+			if seen[id] {
+				return nil, fmt.Errorf("reorder: duplicate account id %q", id)
+			}
+			seen[id] = true
+			acc, ok := byID[id]
+			if !ok {
+				return nil, fmt.Errorf("reorder: unknown account id %q", id)
+			}
+			reordered = append(reordered, acc)
+		}
+		return reordered, nil
 	})
 }
 

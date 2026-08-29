@@ -95,6 +95,7 @@ func (a *App) setupSystemTray() {
 	onShow := func() {
 		wailsRuntime.WindowShow(a.ctx)
 		wailsRuntime.WindowUnminimise(a.ctx)
+		setWindowIcon(trayIconData)
 	}
 
 	onQuit := func() {
@@ -207,6 +208,11 @@ func (a *App) DeleteAccount(id string) error {
 	return accounts.DeleteAccount(id)
 }
 
+// ReorderAccounts saves accounts in the order given by orderedIDs.
+func (a *App) ReorderAccounts(orderedIDs []string) error {
+	return accounts.ReorderAccounts(orderedIDs)
+}
+
 // ==================== SETTINGS ====================
 
 // SettingsDTO for frontend consumption
@@ -268,12 +274,17 @@ func (a *App) SetTheme(id string) error {
 
 // BrowseLauncherPath opens a native file dialog
 func (a *App) BrowseLauncherPath() (string, error) {
-	return wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
-		Title: i18n.T(i18n.DlgSelectLauncher),
-		Filters: []wailsRuntime.FileFilter{
-			{DisplayName: i18n.T(i18n.DlgFilterExe), Pattern: "*.exe"},
-		},
+	var path string
+	var err error
+	runWithDialogIconRefresh(trayIconData, func() {
+		path, err = wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+			Title: i18n.T(i18n.DlgSelectLauncher),
+			Filters: []wailsRuntime.FileFilter{
+				{DisplayName: i18n.T(i18n.DlgFilterExe), Pattern: "*.exe"},
+			},
+		})
 	})
+	return path, err
 }
 
 // ==================== TRANSLATIONS ====================
@@ -328,17 +339,9 @@ func (a *App) GetVersion() string {
 
 // ConfirmDelete shows a native confirmation dialog
 func (a *App) ConfirmDelete() (bool, error) {
-	yes := i18n.T(i18n.BtnYes)
-	no := i18n.T(i18n.BtnNo)
-	result, err := wailsRuntime.MessageDialog(a.ctx, wailsRuntime.MessageDialogOptions{
-		Type:          wailsRuntime.QuestionDialog,
-		Title:         i18n.T(i18n.BtnDelete),
-		Message:       i18n.T(i18n.ConfirmDelete),
-		DefaultButton: no,
-		Buttons:       []string{yes, no},
-	})
-	if err != nil {
-		return false, err
-	}
-	return result == yes, nil
+	return showQuestionDialog(
+		trayIconData,
+		i18n.T(i18n.BtnDelete),
+		i18n.T(i18n.ConfirmDelete),
+	)
 }

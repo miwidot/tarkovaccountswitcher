@@ -22,6 +22,8 @@ export function GetVersion():Promise<string>;
 
 export function QuitApp():Promise<void>;
 
+export function ReorderAccounts(arg1:Array<string>):Promise<void>;
+
 export function SetAutoStart(arg1:boolean):Promise<void>;
 
 export function SetLanguage(arg1:string):Promise<void>;

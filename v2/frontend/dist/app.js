@@ -7,28 +7,45 @@
 // Translation cache — loaded from Go on startup and language change
 let T = {};
 
-let settingsStatusClearTimer = null;
+const STATUS_MESSAGE_DURATION_MS = 3000;
 
-function scheduleSettingsStatusClear() {
-    if (settingsStatusClearTimer) {
-        clearTimeout(settingsStatusClearTimer);
-        settingsStatusClearTimer = null;
+let statusClearTimers = {};
+
+function scheduleStatusClear(elementId) {
+    if (statusClearTimers[elementId]) {
+        clearTimeout(statusClearTimers[elementId]);
     }
-    settingsStatusClearTimer = setTimeout(() => {
-        settingsStatusClearTimer = null;
-        const el = document.getElementById('settings-status');
+    statusClearTimers[elementId] = setTimeout(() => {
+        delete statusClearTimers[elementId];
+        const el = document.getElementById(elementId);
         if (el) {
             el.textContent = '';
             el.className = 'status-message';
         }
-    }, 3000);
+    }, STATUS_MESSAGE_DURATION_MS);
+}
+
+function cancelStatusClear(elementId) {
+    if (statusClearTimers[elementId]) {
+        clearTimeout(statusClearTimers[elementId]);
+        delete statusClearTimers[elementId];
+    }
+}
+
+function scheduleSettingsStatusClear() {
+    scheduleStatusClear('settings-status');
 }
 
 function cancelSettingsStatusClear() {
-    if (settingsStatusClearTimer) {
-        clearTimeout(settingsStatusClearTimer);
-        settingsStatusClearTimer = null;
-    }
+    cancelStatusClear('settings-status');
+}
+
+function scheduleAccountsStatusClear() {
+    scheduleStatusClear('accounts-status');
+}
+
+function scheduleAddStatusClear() {
+    scheduleStatusClear('add-status');
 }
 
 // ======================== INITIALIZATION ========================
@@ -247,10 +264,13 @@ async function loadAccountsTab() {
             listEl.appendChild(createAccountCard(acc));
         });
 
+        ensureAccountListDragReorder(listEl);
+
     } catch (e) {
         if (statusEl) {
             statusEl.textContent = tf('statusError', { error: String(e) });
             statusEl.className = 'status-message error';
+            scheduleAccountsStatusClear();
         }
     }
 }
@@ -258,11 +278,15 @@ async function loadAccountsTab() {
 function createAccountCard(acc) {
     const card = document.createElement('div');
     card.className = 'account-card';
+    card.dataset.accountId = acc.id;
 
     const statusClass = acc.hasSession ? 'has-session' : 'no-session';
     const statusText = acc.hasSession ? t('statusAutoLogin') : t('statusLoginRequired');
 
     card.innerHTML =
+        '<div class="account-drag-handle" title="Drag to reorder" aria-hidden="true">' +
+            '<span class="account-drag-grip"></span>' +
+        '</div>' +
         '<div class="account-info">' +
             '<div class="account-name">' + escapeHtml(acc.name) + '</div>' +
             '<div class="account-email">' + escapeHtml(acc.email) + '</div>' +
@@ -284,6 +308,91 @@ function createAccountCard(acc) {
     });
 
     return card;
+}
+
+let accountDragReorderBound = false;
+let accountDragState = null;
+
+function ensureAccountListDragReorder(listEl) {
+    if (accountDragReorderBound) return;
+    accountDragReorderBound = true;
+
+    listEl.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        if (e.target.closest('.account-actions') || e.target.closest('button')) return;
+
+        const dragArea = e.target.closest('.account-drag-handle, .account-info');
+        if (!dragArea) return;
+
+        const card = dragArea.closest('.account-card');
+        if (!card) return;
+
+        e.preventDefault();
+        dragArea.setPointerCapture(e.pointerId);
+
+        accountDragState = {
+            card,
+            pointerId: e.pointerId,
+            moved: false,
+            listEl
+        };
+        card.classList.add('account-card-dragging');
+    });
+
+    listEl.addEventListener('pointermove', (e) => {
+        if (!accountDragState || e.pointerId !== accountDragState.pointerId) return;
+
+        accountDragState.moved = true;
+        const { card, listEl: list } = accountDragState;
+        const cards = [...list.querySelectorAll('.account-card')].filter(c => c !== card);
+        const midY = e.clientY;
+
+        let placed = false;
+        for (const other of cards) {
+            const rect = other.getBoundingClientRect();
+            if (midY < rect.top + rect.height / 2) {
+                list.insertBefore(card, other);
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) {
+            list.appendChild(card);
+        }
+    });
+
+    listEl.addEventListener('pointerup', finishAccountDragReorder);
+    listEl.addEventListener('pointercancel', finishAccountDragReorder);
+}
+
+async function finishAccountDragReorder(e) {
+    if (!accountDragState || e.pointerId !== accountDragState.pointerId) return;
+
+    const { card, moved, listEl } = accountDragState;
+    card.classList.remove('account-card-dragging');
+    accountDragState = null;
+
+    if (!moved) return;
+
+    const orderedIDs = [...listEl.querySelectorAll('.account-card')]
+        .map(c => c.dataset.accountId)
+        .filter(Boolean);
+
+    const statusEl = document.getElementById('accounts-status');
+    try {
+        await window.go.main.App.ReorderAccounts(orderedIDs);
+        if (statusEl) {
+            statusEl.textContent = '';
+            statusEl.className = 'status-message';
+        }
+    } catch (err) {
+        if (statusEl) {
+            statusEl.textContent = tf('statusError', { error: String(err) });
+            statusEl.className = 'status-message error';
+            scheduleAccountsStatusClear();
+        }
+        await loadAccountsTab();
+    }
 }
 
 async function onSwitchAccount(id) {
@@ -311,9 +420,11 @@ async function onSwitchAccount(id) {
             statusEl.textContent = tf('statusError', { error: result.error });
             statusEl.className = 'status-message error';
         }
+        scheduleAccountsStatusClear();
     } catch (e) {
         statusEl.textContent = tf('statusError', { error: String(e) });
         statusEl.className = 'status-message error';
+        scheduleAccountsStatusClear();
     }
 }
 
@@ -327,6 +438,7 @@ async function onDeleteAccount(id) {
         const statusEl = document.getElementById('accounts-status');
         statusEl.textContent = '\u2713 ' + t('statusAccountDeleted');
         statusEl.className = 'status-message success';
+        scheduleAccountsStatusClear();
 
         await loadAccountsTab();
     } catch (e) {
@@ -334,6 +446,7 @@ async function onDeleteAccount(id) {
         if (statusEl) {
             statusEl.textContent = tf('statusDeleteFailed', { error: String(e) });
             statusEl.className = 'status-message error';
+            scheduleAccountsStatusClear();
         }
         console.error('Delete failed:', e);
     }
@@ -373,6 +486,7 @@ async function onAddAccount() {
     if (!name || !email) {
         statusEl.textContent = '\u26A0\uFE0F ' + t('statusFillFields');
         statusEl.className = 'status-message warning';
+        scheduleAddStatusClear();
         return;
     }
 
@@ -382,16 +496,24 @@ async function onAddAccount() {
     try {
         await window.go.main.App.AddAccount(name, email);
 
-        statusEl.textContent = t('statusAccountAdded');
-        statusEl.className = 'status-message success';
+        statusEl.textContent = '';
+        statusEl.className = 'status-message';
+
         nameInput.value = '';
         emailInput.value = '';
 
         await loadAccountsTab();
+
+        const accountsStatusEl = document.getElementById('accounts-status');
+        accountsStatusEl.textContent = t('statusAccountAdded');
+        accountsStatusEl.className = 'status-message success';
+        scheduleAccountsStatusClear();
+
         selectTab('accounts');
     } catch (e) {
         statusEl.textContent = tf('statusError', { error: String(e) });
         statusEl.className = 'status-message error';
+        scheduleAddStatusClear();
     }
 }
 

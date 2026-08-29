@@ -99,6 +99,7 @@ const (
 	DlgSelectLauncher      = "dlgSelectLauncher"
 	DlgFilterExe           = "dlgFilterExe"
 	ErrAccountNotFound     = "errAccountNotFound"
+	ErrDuplicateEmail      = "errDuplicateEmail"
 	ErrUnsupportedLanguage = "errUnsupportedLanguage"
 
 	// App chrome + footer (frontend)
@@ -192,6 +193,7 @@ var translations = map[string]map[string]string{
 		DlgSelectLauncher:      "BSG Launcher auswählen",
 		DlgFilterExe:           "Programm (*.exe)",
 		ErrAccountNotFound:     "Konto nicht gefunden",
+		ErrDuplicateEmail:      "Ein Konto mit dieser E-Mail existiert bereits",
 		ErrUnsupportedLanguage: "Nicht unterstützte Sprache: {lang}",
 
 		AboutVersion:    "Tarkov Account Switcher {version}",
@@ -281,6 +283,7 @@ var translations = map[string]map[string]string{
 		DlgSelectLauncher:      "Select BSG Launcher",
 		DlgFilterExe:           "Executable (*.exe)",
 		ErrAccountNotFound:     "Account not found",
+		ErrDuplicateEmail:      "An account with this email already exists",
 		ErrUnsupportedLanguage: "Unsupported language: {lang}",
 
 		AboutVersion:    "Tarkov Account Switcher {version}",
@@ -363,6 +366,7 @@ var translations = map[string]map[string]string{
 		DlgSelectLauncher:      "選擇 BSG 啟動器",
 		DlgFilterExe:           "執行檔 (*.exe)",
 		ErrAccountNotFound:     "找不到帳號",
+		ErrDuplicateEmail:      "此電子郵件已存在",
 		ErrUnsupportedLanguage: "不支援的語言：{lang}",
 
 		AboutVersion:    "Tarkov Account Switcher {version}",
@@ -444,6 +448,7 @@ var translations = map[string]map[string]string{
 		DlgSelectLauncher:      "选择 BSG 启动器",
 		DlgFilterExe:           "可执行文件 (*.exe)",
 		ErrAccountNotFound:     "找不到账号",
+		ErrDuplicateEmail:      "此电子邮箱已存在",
 		ErrUnsupportedLanguage: "不支持的语言：{lang}",
 
 		AboutVersion:    "Tarkov Account Switcher {version}",
@@ -525,6 +530,7 @@ var translations = map[string]map[string]string{
 		DlgSelectLauncher:      "BSG ランチャーを選択",
 		DlgFilterExe:           "実行ファイル (*.exe)",
 		ErrAccountNotFound:     "アカウントが見つかりません",
+		ErrDuplicateEmail:      "このメールアドレスのアカウントは既に存在します",
 		ErrUnsupportedLanguage: "未対応の言語: {lang}",
 
 		AboutVersion:    "Tarkov Account Switcher {version}",

@@ -42,6 +42,10 @@ export function QuitApp() {
   return window['go']['main']['App']['QuitApp']();
 }
 
+export function ReorderAccounts(arg1) {
+  return window['go']['main']['App']['ReorderAccounts'](arg1);
+}
+
 export function SetAutoStart(arg1) {
   return window['go']['main']['App']['SetAutoStart'](arg1);
 }

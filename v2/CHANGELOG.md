@@ -1,5 +1,20 @@
 # Changelog - Tarkov Account Switcher v2
 
+## v2.0.8 (2026-06-05)
+
+### Fixes
+- Delete-account confirmation works in non-English UI locales.
+- Native dialog title bars use the embedded app icon.
+- Reject duplicate email when adding an account (case-insensitive).
+- Reorder API rejects duplicate or unknown account IDs.
+- Dialog icon refresh reuses a single Win32 callback (avoids exhausting the syscall callback quota).
+- Status messages on Accounts, Add, and Settings tabs auto-clear after 3 seconds.
+
+### New Features
+- Drag-and-drop reordering for the accounts list (persisted to `accounts.json`).
+
+---
+
 ## v2.0.7 (2026-05-09)
 
 ### Maintenance
