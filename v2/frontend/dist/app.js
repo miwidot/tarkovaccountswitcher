@@ -168,6 +168,7 @@ async function applyTranslations() {
     setText('settings-theme-label', t('labelTheme'));
     setText('settings-path-label', t('labelLauncherPath'));
     setPlaceholder('settings-path-input', t('placeholderLauncherPath'));
+    setText('settings-launcher-help', t('launcherPathHelp'));
     setText('settings-browse-btn', t('btnBrowse'));
     setText('settings-save-btn', t('btnSave'));
     setText('settings-autostart-label', t('labelAutoStart'));
@@ -297,6 +298,7 @@ function createAccountCard(acc) {
         '</div>' +
         '<div class="account-actions">' +
             '<button class="btn btn-primary" data-action="switch">' + t('btnSwitch') + '</button>' +
+            '<button class="btn btn-secondary" data-action="reauth">' + t('btnReauthenticate') + '</button>' +
             '<button class="btn btn-danger" data-action="delete">' + t('btnDelete') + '</button>' +
         '</div>';
 
@@ -305,6 +307,9 @@ function createAccountCard(acc) {
     });
     card.querySelector('[data-action="delete"]').addEventListener('click', () => {
         onDeleteAccount(acc.id);
+    });
+    card.querySelector('[data-action="reauth"]').addEventListener('click', () => {
+        onReauthenticateAccount(acc.id);
     });
 
     return card;
@@ -405,10 +410,10 @@ async function onSwitchAccount(id) {
 
         if (result.success) {
             if (result.hasSession) {
-                statusEl.textContent = tf('statusAutoLoginActive', {
-                    name: result.accountName
-                });
-                statusEl.className = 'status-message success';
+                // Starting the launcher hides this window, so a success toast
+                // is both easy to miss and does not indicate server validation.
+                statusEl.textContent = '';
+                statusEl.className = 'status-message';
             } else {
                 statusEl.textContent = tf('statusManualLogin', {
                     name: result.accountName,
@@ -420,8 +425,29 @@ async function onSwitchAccount(id) {
             statusEl.textContent = tf('statusError', { error: result.error });
             statusEl.className = 'status-message error';
         }
-        scheduleAccountsStatusClear();
+        if (!result.success || !result.hasSession) scheduleAccountsStatusClear();
     } catch (e) {
+        statusEl.textContent = tf('statusError', { error: String(e) });
+        statusEl.className = 'status-message error';
+        scheduleAccountsStatusClear();
+    }
+}
+
+async function onReauthenticateAccount(id) {
+    const confirmed = window.confirm(t('confirmReauthenticate'));
+    if (!confirmed) return;
+
+    try {
+        const saved = await window.go.main.App.SaveCurrentLauncherSession(id);
+        if (saved) {
+            await loadAccountsTab();
+            return;
+        }
+        await window.go.main.App.ClearAccountSession(id);
+        await loadAccountsTab();
+        await onSwitchAccount(id);
+    } catch (e) {
+        const statusEl = document.getElementById('accounts-status');
         statusEl.textContent = tf('statusError', { error: String(e) });
         statusEl.className = 'status-message error';
         scheduleAccountsStatusClear();

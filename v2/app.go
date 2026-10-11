@@ -209,6 +209,16 @@ func (a *App) DeleteAccount(id string) error {
 	return accounts.DeleteAccount(id)
 }
 
+// ClearAccountSession removes a saved session without deleting the account.
+func (a *App) ClearAccountSession(id string) error {
+	return accounts.ClearAccountSession(id)
+}
+
+// SaveCurrentLauncherSession saves the current official launcher's session to an account when it matches.
+func (a *App) SaveCurrentLauncherSession(id string) (bool, error) {
+	return accounts.SaveCurrentLauncherSession(id)
+}
+
 // ReorderAccounts saves accounts in the order given by orderedIDs.
 func (a *App) ReorderAccounts(orderedIDs []string) error {
 	return accounts.ReorderAccounts(orderedIDs)
@@ -298,15 +308,15 @@ func (a *App) GetAllTranslations() map[string]string {
 		i18n.LabelEmail, i18n.PlaceholderEmail, i18n.AddAccountHelp, i18n.BtnAddAccount,
 		i18n.EmptyStateTitle, i18n.EmptyStateSubtitle,
 		i18n.StatusAutoLogin, i18n.StatusLoginReq,
-		i18n.BtnSwitch, i18n.BtnDelete, i18n.ConfirmDelete, i18n.BtnYes, i18n.BtnNo,
+		i18n.BtnSwitch, i18n.BtnReauthenticate, i18n.BtnDelete, i18n.ConfirmDelete, i18n.ConfirmReauthenticate, i18n.BtnYes, i18n.BtnNo,
 		i18n.SettingsTitle, i18n.LabelLanguage, i18n.LabelLauncherPath,
-		i18n.PlaceholderLauncher, i18n.BtnBrowse, i18n.BtnSave,
+		i18n.PlaceholderLauncher, i18n.LauncherPathHelp, i18n.BtnBrowse, i18n.BtnSave,
 		i18n.LabelAutoStart, i18n.AutoStartHelp, i18n.BtnQuit,
 		i18n.LabelStreamerMode, i18n.StreamerModeHelp,
 		i18n.LabelTheme,
 		i18n.ThemeNameEft, i18n.ThemeNameKilla, i18n.ThemeNameDark, i18n.ThemeNameLight, i18n.ThemeNameCappuccino,
 		i18n.StatusFillFields, i18n.StatusAccountAdded, i18n.StatusAccountDeleted,
-		i18n.StatusLauncherRestart, i18n.StatusAutoLoginActive, i18n.StatusManualLogin,
+		i18n.StatusLauncherRestart, i18n.StatusManualLogin,
 		i18n.StatusPathSaved, i18n.StatusEnterPath, i18n.StatusLanguageSaved, i18n.StatusThemeSaved,
 		i18n.StatusError, i18n.StatusDeleteFailed,
 		i18n.StatusAutoStartOn, i18n.StatusAutoStartOff, i18n.StatusStreamerOn, i18n.StatusStreamerOff,
