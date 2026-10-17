@@ -95,6 +95,7 @@ func (a *App) setupSystemTray() {
 	onShow := func() {
 		wailsRuntime.WindowShow(a.ctx)
 		wailsRuntime.WindowUnminimise(a.ctx)
+		setWindowIcon(trayIconData)
 	}
 
 	onQuit := func() {
@@ -140,25 +141,26 @@ func (a *App) GetAccounts() ([]AccountDTO, error) {
 	return dtos, nil
 }
 
-// resizeWindowToFit sizes the window to comfortably fit the given number of
-// account cards. Called on every accounts list fetch; the window grows or
-// shrinks with the list. Uses a native Win32 SetWindowPos helper so the
-// user's manual width stays intact (Wails' WindowSetSize is not DPI-stable
-// on Windows when the width is round-tripped back in).
+// resizeWindowToFit sizes the window to show three to five account cards.
+// Called on every accounts list fetch; extra accounts remain scrollable. Uses
+// a native Win32 SetWindowPos helper so the user's manual width stays intact
+// (Wails' WindowSetSize is not DPI-stable on Windows when width is round-tripped).
 func (a *App) resizeWindowToFit(count int) {
 	const (
-		chrome  = 180 // title bar + tab bar + panel padding + update banner room
-		perCard = 100 // card body + 6px gap — generous to avoid any overflow
-		safety  = 40
-		floor   = 380
+		chrome   = 180 // title bar + tab bar + panel padding + update banner room
+		perCard  = 100 // card body + 6px gap — generous to avoid any overflow
+		safety   = 40
+		minCards = 3
+		maxCards = 5
 	)
-	needed := floor
-	if count > 0 {
-		needed = chrome + perCard*count + safety
-		if needed < floor {
-			needed = floor
-		}
+	visibleCards := count
+	if visibleCards < minCards {
+		visibleCards = minCards
 	}
+	if visibleCards > maxCards {
+		visibleCards = maxCards
+	}
+	needed := chrome + perCard*visibleCards + safety
 	if screens, err := wailsRuntime.ScreenGetAll(a.ctx); err == nil {
 		for _, s := range screens {
 			if !s.IsCurrent {
@@ -205,6 +207,21 @@ func (a *App) AddAccount(name, email string) error {
 // DeleteAccount removes an account by ID
 func (a *App) DeleteAccount(id string) error {
 	return accounts.DeleteAccount(id)
+}
+
+// ClearAccountSession removes a saved session without deleting the account.
+func (a *App) ClearAccountSession(id string) error {
+	return accounts.ClearAccountSession(id)
+}
+
+// SaveCurrentLauncherSession saves the current official launcher's session to an account when it matches.
+func (a *App) SaveCurrentLauncherSession(id string) (bool, error) {
+	return accounts.SaveCurrentLauncherSession(id)
+}
+
+// ReorderAccounts saves accounts in the order given by orderedIDs.
+func (a *App) ReorderAccounts(orderedIDs []string) error {
+	return accounts.ReorderAccounts(orderedIDs)
 }
 
 // ==================== SETTINGS ====================
@@ -268,12 +285,17 @@ func (a *App) SetTheme(id string) error {
 
 // BrowseLauncherPath opens a native file dialog
 func (a *App) BrowseLauncherPath() (string, error) {
-	return wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
-		Title: i18n.T(i18n.DlgSelectLauncher),
-		Filters: []wailsRuntime.FileFilter{
-			{DisplayName: i18n.T(i18n.DlgFilterExe), Pattern: "*.exe"},
-		},
+	var path string
+	var err error
+	runWithDialogIconRefresh(trayIconData, func() {
+		path, err = wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+			Title: i18n.T(i18n.DlgSelectLauncher),
+			Filters: []wailsRuntime.FileFilter{
+				{DisplayName: i18n.T(i18n.DlgFilterExe), Pattern: "*.exe"},
+			},
+		})
 	})
+	return path, err
 }
 
 // ==================== TRANSLATIONS ====================
@@ -286,15 +308,15 @@ func (a *App) GetAllTranslations() map[string]string {
 		i18n.LabelEmail, i18n.PlaceholderEmail, i18n.AddAccountHelp, i18n.BtnAddAccount,
 		i18n.EmptyStateTitle, i18n.EmptyStateSubtitle,
 		i18n.StatusAutoLogin, i18n.StatusLoginReq,
-		i18n.BtnSwitch, i18n.BtnDelete, i18n.ConfirmDelete, i18n.BtnYes, i18n.BtnNo,
+		i18n.BtnSwitch, i18n.BtnReauthenticate, i18n.BtnDelete, i18n.ConfirmDelete, i18n.ConfirmReauthenticate, i18n.BtnYes, i18n.BtnNo,
 		i18n.SettingsTitle, i18n.LabelLanguage, i18n.LabelLauncherPath,
-		i18n.PlaceholderLauncher, i18n.BtnBrowse, i18n.BtnSave,
+		i18n.PlaceholderLauncher, i18n.LauncherPathHelp, i18n.BtnBrowse, i18n.BtnSave,
 		i18n.LabelAutoStart, i18n.AutoStartHelp, i18n.BtnQuit,
 		i18n.LabelStreamerMode, i18n.StreamerModeHelp,
 		i18n.LabelTheme,
 		i18n.ThemeNameEft, i18n.ThemeNameKilla, i18n.ThemeNameDark, i18n.ThemeNameLight, i18n.ThemeNameCappuccino,
 		i18n.StatusFillFields, i18n.StatusAccountAdded, i18n.StatusAccountDeleted,
-		i18n.StatusLauncherRestart, i18n.StatusAutoLoginActive, i18n.StatusManualLogin,
+		i18n.StatusLauncherRestart, i18n.StatusManualLogin,
 		i18n.StatusPathSaved, i18n.StatusEnterPath, i18n.StatusLanguageSaved, i18n.StatusThemeSaved,
 		i18n.StatusError, i18n.StatusDeleteFailed,
 		i18n.StatusAutoStartOn, i18n.StatusAutoStartOff, i18n.StatusStreamerOn, i18n.StatusStreamerOff,
@@ -328,17 +350,9 @@ func (a *App) GetVersion() string {
 
 // ConfirmDelete shows a native confirmation dialog
 func (a *App) ConfirmDelete() (bool, error) {
-	yes := i18n.T(i18n.BtnYes)
-	no := i18n.T(i18n.BtnNo)
-	result, err := wailsRuntime.MessageDialog(a.ctx, wailsRuntime.MessageDialogOptions{
-		Type:          wailsRuntime.QuestionDialog,
-		Title:         i18n.T(i18n.BtnDelete),
-		Message:       i18n.T(i18n.ConfirmDelete),
-		DefaultButton: no,
-		Buttons:       []string{yes, no},
-	})
-	if err != nil {
-		return false, err
-	}
-	return result == yes, nil
+	return showQuestionDialog(
+		trayIconData,
+		i18n.T(i18n.BtnDelete),
+		i18n.T(i18n.ConfirmDelete),
+	)
 }

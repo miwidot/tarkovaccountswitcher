@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"tarkov-account-switcher/internal/config"
+	"tarkov-account-switcher/internal/launcher"
 )
 
 var (
@@ -19,9 +20,21 @@ var (
 	SessionCapturedCallback func(accountID string)
 )
 
-// StartWatcher starts watching for session tokens for the given account.
+// StartWatcher watches the official launcher's session for the given account.
+// It waits while another launcher installation may be writing the shared file,
+// and exits after capturing a session, being stopped, or reaching the timeout.
 // Any previously running watcher is stopped first.
-func StartWatcher(accountID, expectedEmail string) {
+func StartWatcher(accountID, expectedEmail string, previousSession ...json.RawMessage) {
+	var previousAccessToken, previousRefreshToken string
+	if len(previousSession) > 0 {
+		var session map[string]any
+		if err := json.Unmarshal(previousSession[0], &session); err == nil {
+			previousAccessToken, _ = session["at"].(string)
+			previousRefreshToken, _ = session["rt"].(string)
+		}
+	}
+	trackTokenRefresh := previousAccessToken != "" || previousRefreshToken != ""
+
 	watcherMutex.Lock()
 	if watcherRunning && stopChan != nil {
 		close(stopChan)
@@ -56,6 +69,9 @@ func StartWatcher(accountID, expectedEmail string) {
 			return
 
 		case <-ticker.C:
+			if !launcher.IsOnlyConfiguredLauncherRunning() {
+				continue
+			}
 			data, err := os.ReadFile(paths.LauncherSettingsPath)
 			if err != nil {
 				continue
@@ -69,6 +85,9 @@ func StartWatcher(accountID, expectedEmail string) {
 			at, _ := launcherSettings["at"].(string)
 			rt, _ := launcherSettings["rt"].(string)
 			if login != expectedEmail || at == "" || rt == "" {
+				continue
+			}
+			if trackTokenRefresh && at == previousAccessToken && rt == previousRefreshToken {
 				continue
 			}
 

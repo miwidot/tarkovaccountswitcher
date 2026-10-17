@@ -1,60 +1,38 @@
-# Node modules
 node_modules/
 package-lock.json
-
-# Build directories
 build*/
 dist/
 release*/
 RELEASE*/
 /*.exe
-/*.zip
-
-# v2 Go rewrite - tracked
 !v2/
 !v2/frontend/dist/
-# Ignore build artifacts in v2
 v2/*.exe
 v2/*.syso
 v2/build_output.txt
-
-# Packaged apps
-*.zip
 *.tar.gz
 *.dmg
 *.pkg
 *.deb
 *.rpm
-
-# OS files
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# Logs
 *.log
 logs/
-
-# Cache
 .cache/
 *.cache
-
-# Temporary files
 tmp/
 temp/
 *.tmp
-
-# Screenshots (except icon and demos)
 *.png
 !icon.png
 !demo*.png
-
-# Claude Code
 .claude/
+/*.url
+/*.zip

@@ -10,6 +10,10 @@ export function BrowseLauncherPath() {
   return window['go']['main']['App']['BrowseLauncherPath']();
 }
 
+export function ClearAccountSession(arg1) {
+  return window['go']['main']['App']['ClearAccountSession'](arg1);
+}
+
 export function ConfirmDelete() {
   return window['go']['main']['App']['ConfirmDelete']();
 }
@@ -40,6 +44,14 @@ export function GetVersion() {
 
 export function QuitApp() {
   return window['go']['main']['App']['QuitApp']();
+}
+
+export function ReorderAccounts(arg1) {
+  return window['go']['main']['App']['ReorderAccounts'](arg1);
+}
+
+export function SaveCurrentLauncherSession(arg1) {
+  return window['go']['main']['App']['SaveCurrentLauncherSession'](arg1);
 }
 
 export function SetAutoStart(arg1) {

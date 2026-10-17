@@ -6,6 +6,8 @@ export function AddAccount(arg1:string,arg2:string):Promise<void>;
 
 export function BrowseLauncherPath():Promise<string>;
 
+export function ClearAccountSession(arg1:string):Promise<void>;
+
 export function ConfirmDelete():Promise<boolean>;
 
 export function DeleteAccount(arg1:string):Promise<void>;
@@ -21,6 +23,10 @@ export function GetSettings():Promise<main.SettingsDTO>;
 export function GetVersion():Promise<string>;
 
 export function QuitApp():Promise<void>;
+
+export function ReorderAccounts(arg1:Array<string>):Promise<void>;
+
+export function SaveCurrentLauncherSession(arg1:string):Promise<boolean>;
 
 export function SetAutoStart(arg1:boolean):Promise<void>;
 
