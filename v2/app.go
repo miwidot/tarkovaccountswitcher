@@ -60,6 +60,7 @@ func (a *App) startup(ctx context.Context) {
 	accounts.SessionCapturedCallback = func(accountID string) {
 		wailsRuntime.EventsEmit(a.ctx, "session-captured", accountID)
 	}
+	accounts.StartSessionMonitor()
 
 	// Launcher started callback -> hide window
 	launcher.OnLauncherStarted = func() {
@@ -103,7 +104,7 @@ func (a *App) setupSystemTray() {
 		wailsRuntime.Quit(a.ctx)
 	}
 
-	startTray(trayIconData, tooltip, onShow, onQuit)
+	startTray(trayIconData, tooltip, onShow, onQuit, accounts.SaveSessionBeforeShutdown)
 }
 
 // ==================== ACCOUNTS ====================
@@ -209,16 +210,6 @@ func (a *App) DeleteAccount(id string) error {
 	return accounts.DeleteAccount(id)
 }
 
-// ClearAccountSession removes a saved session without deleting the account.
-func (a *App) ClearAccountSession(id string) error {
-	return accounts.ClearAccountSession(id)
-}
-
-// SaveCurrentLauncherSession saves the current official launcher's session to an account when it matches.
-func (a *App) SaveCurrentLauncherSession(id string) (bool, error) {
-	return accounts.SaveCurrentLauncherSession(id)
-}
-
 // ReorderAccounts saves accounts in the order given by orderedIDs.
 func (a *App) ReorderAccounts(orderedIDs []string) error {
 	return accounts.ReorderAccounts(orderedIDs)
@@ -308,7 +299,7 @@ func (a *App) GetAllTranslations() map[string]string {
 		i18n.LabelEmail, i18n.PlaceholderEmail, i18n.AddAccountHelp, i18n.BtnAddAccount,
 		i18n.EmptyStateTitle, i18n.EmptyStateSubtitle,
 		i18n.StatusAutoLogin, i18n.StatusLoginReq,
-		i18n.BtnSwitch, i18n.BtnReauthenticate, i18n.BtnDelete, i18n.ConfirmDelete, i18n.ConfirmReauthenticate, i18n.BtnYes, i18n.BtnNo,
+		i18n.BtnSwitch, i18n.BtnDelete, i18n.ConfirmDelete, i18n.BtnYes, i18n.BtnNo,
 		i18n.SettingsTitle, i18n.LabelLanguage, i18n.LabelLauncherPath,
 		i18n.PlaceholderLauncher, i18n.LauncherPathHelp, i18n.BtnBrowse, i18n.BtnSave,
 		i18n.LabelAutoStart, i18n.AutoStartHelp, i18n.BtnQuit,

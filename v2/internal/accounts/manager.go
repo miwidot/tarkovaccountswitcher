@@ -32,36 +32,6 @@ func (a *Account) HasSession() bool {
 	return len(a.LauncherSession) > 0 || a.EncryptedSession != ""
 }
 
-// SessionDataExpired checks the launcher's atet (access-token expiration) field.
-// Missing or unparseable expiry data is treated as unknown, not expired.
-func SessionDataExpired(session json.RawMessage) bool {
-	var fields struct {
-		ATET json.RawMessage `json:"atet"`
-	}
-	if len(session) == 0 || json.Unmarshal(session, &fields) != nil || len(fields.ATET) == 0 || string(fields.ATET) == "null" {
-		return false
-	}
-
-	var value string
-	if json.Unmarshal(fields.ATET, &value) == nil {
-		for _, layout := range []string{time.RFC3339Nano, time.RFC3339, "2006-01-02 15:04:05"} {
-			if expiry, err := time.Parse(layout, value); err == nil {
-				return !time.Now().Before(expiry)
-			}
-		}
-		return false
-	}
-
-	var unix int64
-	if json.Unmarshal(fields.ATET, &unix) == nil {
-		if unix > 1e12 {
-			unix /= 1000
-		}
-		return !time.Now().Before(time.Unix(unix, 0))
-	}
-	return false
-}
-
 // SwitchResult holds the result of a switch operation
 type SwitchResult struct {
 	Success     bool
@@ -216,7 +186,7 @@ func AddAccount(name, email string) (string, error) {
 	}
 
 	// Launcher I/O happens outside the accounts lock.
-	launcher.KillLauncher()
+	closeLauncherSavingSession()
 	if err := launcher.UpdateLauncherAccount(email); err != nil {
 		return "", err
 	}
@@ -226,11 +196,6 @@ func AddAccount(name, email string) (string, error) {
 	if launcher.OnLauncherStarted != nil {
 		launcher.OnLauncherStarted()
 	}
-
-	go func() {
-		time.Sleep(2 * time.Second)
-		StartWatcher(newAccount.ID, email)
-	}()
 
 	return newAccount.ID, nil
 }
@@ -248,63 +213,114 @@ func DeleteAccount(id string) error {
 	})
 }
 
-// ClearAccountSession forgets only the saved launcher session, keeping the account record.
-func ClearAccountSession(id string) error {
-	return mutate(func(accs []Account) ([]Account, error) {
-		for i := range accs {
-			if accs[i].ID == id {
-				accs[i].LauncherSession = nil
-				accs[i].EncryptedSession = ""
-				accs[i].SessionCaptured = ""
-				return accs, nil
-			}
-		}
-		return nil, fmt.Errorf("account not found")
-	})
+// SaveSessionBeforeShutdown runs while Windows waits to log off or shut down.
+// Left alone, the launcher starts closing on its own but is killed before it
+// writes tokens refreshed since its last save, so the next start needs a
+// fresh login. Closing it here, while shutdown is still blocked, gives it time
+// to save; the result is then stored for the matching account.
+func SaveSessionBeforeShutdown() {
+	if !launcher.IsOnlyConfiguredLauncherRunning() {
+		return
+	}
+	// No force-kill fallback: Windows terminates the launcher anyway.
+	if launcher.CloseLauncher(8 * time.Second) {
+		captureLauncherSession()
+	}
 }
 
-// SaveCurrentLauncherSession saves the current configured launcher's session
-// to an account if the launcher path and login both match. It returns false
-// when there is no verifiable session to capture.
-func SaveCurrentLauncherSession(id string) (bool, error) {
-	if !launcher.IsOnlyConfiguredLauncherRunning() {
-		return false, nil
+// closeLauncherSavingSession closes the launcher so it writes its current
+// tokens, then stores them for the matching account. Must run before anything
+// rewrites the launcher settings file. Skips the capture if another launcher
+// installation (Steam) was running, since it shares the settings file.
+func closeLauncherSavingSession() {
+	onlyOurs := launcher.IsOnlyConfiguredLauncherRunning()
+	launcher.KillLauncher()
+	if onlyOurs {
+		captureLauncherSession()
 	}
+}
 
-	account, err := GetAccountByID(id)
+// captureLauncherSession stores the session from the launcher settings file
+// for the account whose email matches its login. Returns that account's ID if
+// its saved session changed, "" otherwise.
+func captureLauncherSession() string {
+	launcherSettings, login, err := readLauncherAuth()
+	if err != nil || launcherSettings == nil {
+		return ""
+	}
+	return storeLauncherSession(launcherSettings, login)
+}
+
+var errSessionUnchanged = errors.New("session unchanged")
+
+func storeLauncherSession(launcherSettings map[string]any, login string) string {
+	sessionData, err := json.Marshal(BuildAuthSession(launcherSettings))
 	if err != nil {
-		return false, err
+		return ""
 	}
-	if account == nil {
-		return false, fmt.Errorf("account not found")
+	at, _ := launcherSettings["at"].(string)
+	rt, _ := launcherSettings["rt"].(string)
+	var capturedID string
+	err = mutate(func(accs []Account) ([]Account, error) {
+		for i := range accs {
+			if !sameEmail(accs[i].Email, login) {
+				continue
+			}
+			if savedAT, savedRT := savedTokens(accs[i]); savedAT == at && savedRT == rt {
+				return nil, errSessionUnchanged
+			}
+			accs[i].LauncherSession = sessionData
+			accs[i].SessionCaptured = time.Now().Format(time.RFC3339)
+			capturedID = accs[i].ID
+			return accs, nil
+		}
+		return nil, errSessionUnchanged
+	})
+	if err != nil {
+		return ""
 	}
+	return capturedID
+}
 
+// savedTokens returns the access and refresh token of an account's saved session.
+func savedTokens(acc Account) (at, rt string) {
+	if acc.EncryptedSession == "" {
+		return "", ""
+	}
+	dec, err := Decrypt(acc.EncryptedSession)
+	if err != nil {
+		return "", ""
+	}
+	var tokens struct {
+		AT string `json:"at"`
+		RT string `json:"rt"`
+	}
+	_ = json.Unmarshal([]byte(dec), &tokens)
+	return tokens.AT, tokens.RT
+}
+
+// readLauncherAuth reads the launcher settings file. It returns nil settings
+// (and no error) when the file holds no complete login.
+func readLauncherAuth() (map[string]any, string, error) {
 	data, err := os.ReadFile(config.GetPaths().LauncherSettingsPath)
 	if err != nil {
-		return false, err
+		return nil, "", err
 	}
 	var launcherSettings map[string]any
 	if err := json.Unmarshal(data, &launcherSettings); err != nil {
-		return false, err
+		return nil, "", err
 	}
 	login, _ := launcherSettings["login"].(string)
 	at, _ := launcherSettings["at"].(string)
 	rt, _ := launcherSettings["rt"].(string)
-	if !strings.EqualFold(strings.TrimSpace(login), strings.TrimSpace(account.Email)) || at == "" || rt == "" {
-		return false, nil
+	if login == "" || at == "" || rt == "" {
+		return nil, "", nil
 	}
+	return launcherSettings, login, nil
+}
 
-	sessionData, err := json.Marshal(BuildAuthSession(launcherSettings))
-	if err != nil {
-		return false, err
-	}
-	if SessionDataExpired(sessionData) {
-		return false, nil
-	}
-	if err := UpdateAccountSession(id, sessionData); err != nil {
-		return false, err
-	}
-	return true, nil
+func sameEmail(a, b string) bool {
+	return strings.EqualFold(strings.TrimSpace(a), strings.TrimSpace(b))
 }
 
 // ReorderAccounts persists accounts in the given ID order.
@@ -350,10 +366,7 @@ func UpdateAccountSession(id string, session json.RawMessage) error {
 
 // SwitchAccount switches to the specified account.
 func SwitchAccount(id string) *SwitchResult {
-	// Do not save the current settings back to an account here. Steam and BSG
-	// launchers share this file, and its login field can identify one account
-	// while its tokens belong to the other platform.
-	launcher.KillLauncher()
+	closeLauncherSavingSession()
 	launcher.ClearGameCache()
 
 	account, err := GetAccountByID(id)
@@ -371,10 +384,6 @@ func SwitchAccount(id string) *SwitchResult {
 		if launcher.OnLauncherStarted != nil {
 			launcher.OnLauncherStarted()
 		}
-		go func() {
-			time.Sleep(2 * time.Second)
-			StartWatcher(id, account.Email, account.LauncherSession)
-		}()
 		return &SwitchResult{
 			Success:     true,
 			AccountName: account.Name,
@@ -394,11 +403,6 @@ func SwitchAccount(id string) *SwitchResult {
 	if launcher.OnLauncherStarted != nil {
 		launcher.OnLauncherStarted()
 	}
-
-	go func() {
-		time.Sleep(2 * time.Second)
-		StartWatcher(id, account.Email)
-	}()
 
 	return &SwitchResult{
 		Success:     true,

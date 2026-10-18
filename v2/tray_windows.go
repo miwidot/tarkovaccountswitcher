@@ -27,6 +27,8 @@ const (
 	wmCommand = 0x0111
 	wmDestroy = 0x0002
 
+	wmQueryEndSession = 0x0011
+
 	wmLButtonUp    = 0x0202
 	wmRButtonUp    = 0x0205
 	wmLButtonDblClk = 0x0203
@@ -119,11 +121,14 @@ var (
 	procGetClassNameW       = user32dll.NewProc("GetClassNameW")
 	procGetModuleHandleW    = kernel32dll.NewProc("GetModuleHandleW")
 	procGetCurrentProcessId = kernel32dll.NewProc("GetCurrentProcessId")
+	procSetProcessShutdownParameters = kernel32dll.NewProc("SetProcessShutdownParameters")
 	procShellNotifyIconW    = shell32dll.NewProc("Shell_NotifyIconW")
 	procGetWindowRect       = user32dll.NewProc("GetWindowRect")
 	procSetWindowPos        = user32dll.NewProc("SetWindowPos")
 	procGetDpiForWindow     = user32dll.NewProc("GetDpiForWindow")
 	procMessageBoxW         = user32dll.NewProc("MessageBoxW")
+	procShutdownBlockReasonCreate  = user32dll.NewProc("ShutdownBlockReasonCreate")
+	procShutdownBlockReasonDestroy = user32dll.NewProc("ShutdownBlockReasonDestroy")
 )
 
 const (
@@ -193,6 +198,9 @@ type Tray struct {
 	nid     notifyIconData
 	onShow  func()
 	onQuit  func()
+	// onSessionEnding runs synchronously when Windows is about to log off or
+	// shut down; shutdown waits for it (with a visible reason) to return.
+	onSessionEnding func()
 	mu      sync.Mutex
 	running bool
 }
@@ -226,6 +234,15 @@ func trayWndProc(hwnd uintptr, umsg uint32, wParam uintptr, lParam uintptr) uint
 			}
 		}
 		return 0
+
+	case wmQueryEndSession:
+		if globalTray.onSessionEnding != nil {
+			reason, _ := syscall.UTF16PtrFromString(i18n.T(i18n.ShutdownSavingSession))
+			procShutdownBlockReasonCreate.Call(hwnd, uintptr(unsafe.Pointer(reason)))
+			globalTray.onSessionEnding()
+			procShutdownBlockReasonDestroy.Call(hwnd)
+		}
+		return 1
 
 	case wmDestroy:
 		procPostQuitMessage.Call(0)
@@ -269,9 +286,15 @@ func showTrayContextMenu(hwnd uintptr) {
 }
 
 // startTray creates the system tray icon on a dedicated OS thread
-func startTray(iconData []byte, tooltip string, onShow func(), onQuit func()) {
+func startTray(iconData []byte, tooltip string, onShow, onQuit, onSessionEnding func()) {
 	globalTray.onShow = onShow
 	globalTray.onQuit = onQuit
+	globalTray.onSessionEnding = onSessionEnding
+
+	// Highest application shutdown level: Windows queries this process before
+	// the launcher, so onSessionEnding can close the launcher cleanly before
+	// Windows itself ends it without giving it time to save.
+	procSetProcessShutdownParameters.Call(0x3FF, 0)
 
 	go func() {
 		// Lock THIS goroutine to its OS thread.

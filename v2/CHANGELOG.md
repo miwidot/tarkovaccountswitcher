@@ -1,5 +1,20 @@
 # Changelog - Tarkov Account Switcher v2
 
+## v2.1.0 (2026-10-17)
+
+### Fixes
+- **Launcher logins no longer get lost.** The BSG launcher keeps tokens it refreshes after a raid in memory and only writes them to its settings on a clean exit, while BSG invalidates the old refresh token immediately. Force-killing the launcher (account switch) or Windows killing it during shutdown left a dead session behind, so the next start required a fresh login.
+  - Switching/adding accounts now closes the launcher gracefully (force-kill only after an 8s timeout), then saves its session for the matching account.
+  - The launcher is closed through the Windows Restart Manager, so it really exits and saves even when it is set to hide in the tray on close (a plain close request only hid it).
+  - On Windows shutdown/logoff the app is notified before the launcher, briefly blocks shutdown ("Saving Tarkov launcher login…"), lets the launcher close and save, and stores the session.
+  - Saved sessions follow the launcher continuously: whenever it writes new tokens (login, refresh at startup), they are stored for the matching account. Previously a switch could restore an older saved session over newer tokens and log the account out.
+- Launcher process detection uses the Win32 API instead of spawning PowerShell every 2 seconds.
+
+### Removed
+- "Reauthenticate" button on every account card (added in v2.0.9). Sessions are now saved automatically on switch and shutdown; for a dead session, just switch and log in once — the new tokens are captured automatically.
+
+---
+
 ## v2.0.8 (2026-06-05)
 
 ### Fixes
