@@ -1,5 +1,12 @@
 # Changelog - Tarkov Account Switcher v2
 
+## v2.1.1 (2026-10-19)
+
+### Fixes
+- Some antivirus products (Norton) flagged v2.1.0. The launcher is no longer closed through the Windows Restart Manager, whose API is a common ransomware pattern; the app now sends the launcher's windows the same close-for-update messages directly. The behavior is unchanged: the launcher still exits and saves even when it hides in the tray.
+
+---
+
 ## v2.1.0 (2026-10-17)
 
 ### Fixes

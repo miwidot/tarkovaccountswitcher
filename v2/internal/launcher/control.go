@@ -26,18 +26,15 @@ func CloseLauncher(timeout time.Duration) bool {
 	if len(procs) == 0 {
 		return true
 	}
-	// The Restart Manager sends the launcher the messages Windows sends at
-	// logoff, which make it exit even when it is set to hide in the tray on
-	// close (WM_CLOSE only hides it then). Only the main processes take part:
-	// the CEF subprocesses share the exe name but have no windows, and the
-	// Restart Manager refuses the whole request if it includes them.
+	// Only the main processes are asked to close: the CEF subprocesses share
+	// the exe name and exit with them.
 	var mainPIDs []uint32
 	for pid, p := range procs {
 		if _, isChild := procs[p.parentPID]; !isChild {
 			mainPIDs = append(mainPIDs, pid)
 		}
 	}
-	if !shutdownApps(mainPIDs) {
+	if !endSession(mainPIDs) {
 		// taskkill without /F posts WM_CLOSE to the launcher's windows.
 		hiddenCommand("taskkill", "/IM", launcherExe).Run()
 	}
