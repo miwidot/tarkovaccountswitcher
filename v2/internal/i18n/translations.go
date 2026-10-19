@@ -36,17 +36,15 @@ const (
 	BtnAddAccount      = "btnAddAccount"
 
 	// Account List
-	EmptyStateTitle       = "emptyStateTitle"
-	EmptyStateSubtitle    = "emptyStateSubtitle"
-	StatusAutoLogin       = "statusAutoLogin"
-	StatusLoginReq        = "statusLoginRequired"
-	BtnSwitch             = "btnSwitch"
-	BtnReauthenticate     = "btnReauthenticate"
-	BtnDelete             = "btnDelete"
-	ConfirmDelete         = "confirmDelete"
-	ConfirmReauthenticate = "confirmReauthenticate"
-	BtnYes                = "btnYes"
-	BtnNo                 = "btnNo"
+	EmptyStateTitle    = "emptyStateTitle"
+	EmptyStateSubtitle = "emptyStateSubtitle"
+	StatusAutoLogin    = "statusAutoLogin"
+	StatusLoginReq     = "statusLoginRequired"
+	BtnSwitch          = "btnSwitch"
+	BtnDelete          = "btnDelete"
+	ConfirmDelete      = "confirmDelete"
+	BtnYes             = "btnYes"
+	BtnNo              = "btnNo"
 
 	// Settings Tab
 	SettingsTitle       = "settingsTitle"
@@ -77,6 +75,9 @@ const (
 	TrayOpen    = "trayOpen"
 	TrayQuit    = "trayQuit"
 	TrayTooltip = "trayTooltip"
+
+	// Shown by Windows while shutdown waits for the launcher to save its login
+	ShutdownSavingSession = "shutdownSavingSession"
 
 	// Status Messages
 	StatusFillFields      = "statusFillFields"
@@ -139,17 +140,15 @@ var translations = map[string]map[string]string{
 		BtnAddAccount:      "Account hinzufügen & Launcher starten",
 
 		// Account List
-		EmptyStateTitle:       "Noch keine Accounts gespeichert",
-		EmptyStateSubtitle:    "Füge oben deinen ersten Account hinzu",
-		StatusAutoLogin:       "Sitzung gespeichert",
-		StatusLoginReq:        "Keine Sitzung gespeichert - nach der Anmeldung automatisch gespeichert",
-		BtnSwitch:             "Wechseln",
-		BtnReauthenticate:     "Erneut anmelden",
-		BtnDelete:             "Löschen",
-		ConfirmDelete:         "Account wirklich löschen?",
-		ConfirmReauthenticate: "Wenn der offizielle Launcher angemeldet ist, Sitzung speichern; andernfalls Sitzung löschen und erneut anmelden?",
-		BtnYes:                "Ja",
-		BtnNo:                 "Nein",
+		EmptyStateTitle:    "Noch keine Accounts gespeichert",
+		EmptyStateSubtitle: "Füge oben deinen ersten Account hinzu",
+		StatusAutoLogin:    "Sitzung gespeichert",
+		StatusLoginReq:     "Keine Sitzung gespeichert - nach der Anmeldung automatisch gespeichert",
+		BtnSwitch:          "Wechseln",
+		BtnDelete:          "Löschen",
+		ConfirmDelete:      "Account wirklich löschen?",
+		BtnYes:             "Ja",
+		BtnNo:              "Nein",
 
 		// Settings Tab
 		SettingsTitle:       "Einstellungen",
@@ -171,9 +170,10 @@ var translations = map[string]map[string]string{
 		SwitchManualLogin: "Bitte einloggen - Session wird automatisch gespeichert!",
 
 		// Tray Menu
-		TrayOpen:    "Öffnen",
-		TrayQuit:    "Beenden",
-		TrayTooltip: "Tarkov Account Switcher {version}",
+		TrayOpen:              "Öffnen",
+		TrayQuit:              "Beenden",
+		TrayTooltip:           "Tarkov Account Switcher {version}",
+		ShutdownSavingSession: "Speichere Tarkov-Launcher-Login…",
 
 		// Status Messages
 		StatusFillFields:      "Bitte fülle alle Felder aus",
@@ -231,17 +231,15 @@ var translations = map[string]map[string]string{
 		BtnAddAccount:      "Add Account & Start Launcher",
 
 		// Account List
-		EmptyStateTitle:       "No accounts saved yet",
-		EmptyStateSubtitle:    "Add your first account above",
-		StatusAutoLogin:       "Session saved",
-		StatusLoginReq:        "No session saved - it will be saved after login",
-		BtnSwitch:             "Switch",
-		BtnReauthenticate:     "Reauthenticate",
-		BtnDelete:             "Delete",
-		ConfirmDelete:         "Really delete account?",
-		ConfirmReauthenticate: "Save the current official launcher session if available; otherwise clear the saved session and sign in again?",
-		BtnYes:                "Yes",
-		BtnNo:                 "No",
+		EmptyStateTitle:    "No accounts saved yet",
+		EmptyStateSubtitle: "Add your first account above",
+		StatusAutoLogin:    "Session saved",
+		StatusLoginReq:     "No session saved - it will be saved after login",
+		BtnSwitch:          "Switch",
+		BtnDelete:          "Delete",
+		ConfirmDelete:      "Really delete account?",
+		BtnYes:             "Yes",
+		BtnNo:              "No",
 
 		// Settings Tab
 		SettingsTitle:       "Settings",
@@ -263,9 +261,10 @@ var translations = map[string]map[string]string{
 		SwitchManualLogin: "Please login - session will be saved automatically!",
 
 		// Tray Menu
-		TrayOpen:    "Open",
-		TrayQuit:    "Quit",
-		TrayTooltip: "Tarkov Account Switcher {version}",
+		TrayOpen:              "Open",
+		TrayQuit:              "Quit",
+		TrayTooltip:           "Tarkov Account Switcher {version}",
+		ShutdownSavingSession: "Saving Tarkov launcher login…",
 
 		// Status Messages
 		StatusFillFields:      "Please fill all fields",
@@ -320,17 +319,15 @@ var translations = map[string]map[string]string{
 		AddAccountHelp:     "新增後啟動器會自動啟動。\n請登入——工作階段會自動儲存！ ✅",
 		BtnAddAccount:      "新增帳號並啟動啟動器",
 
-		EmptyStateTitle:       "尚無已儲存的帳號",
-		EmptyStateSubtitle:    "在上方新增你的第一個帳號",
-		StatusAutoLogin:       "工作階段已保存",
-		StatusLoginReq:        "尚未保存工作階段（登入後自動保存）",
-		BtnSwitch:             "切換",
-		BtnReauthenticate:     "重新登入",
-		BtnDelete:             "刪除",
-		ConfirmDelete:         "確定要刪除此帳號？",
-		ConfirmReauthenticate: "若官方啟動器已登入，會先保存目前工作階段；否則保留帳號並重新登入。",
-		BtnYes:                "是",
-		BtnNo:                 "否",
+		EmptyStateTitle:    "尚無已儲存的帳號",
+		EmptyStateSubtitle: "在上方新增你的第一個帳號",
+		StatusAutoLogin:    "工作階段已保存",
+		StatusLoginReq:     "尚未保存工作階段（登入後自動保存）",
+		BtnSwitch:          "切換",
+		BtnDelete:          "刪除",
+		ConfirmDelete:      "確定要刪除此帳號？",
+		BtnYes:             "是",
+		BtnNo:              "否",
 
 		SettingsTitle:       "設定",
 		LabelLanguage:       "語言",
@@ -349,9 +346,10 @@ var translations = map[string]map[string]string{
 		SwitchAutoLogin:   "已載入保存的工作階段；若工作階段失效，啟動器仍會要求登入。",
 		SwitchManualLogin: "請登入——工作階段會自動儲存！",
 
-		TrayOpen:    "開啟",
-		TrayQuit:    "結束",
-		TrayTooltip: "Tarkov Account Switcher {version}",
+		TrayOpen:              "開啟",
+		TrayQuit:              "結束",
+		TrayTooltip:           "Tarkov Account Switcher {version}",
+		ShutdownSavingSession: "正在儲存 Tarkov 啟動器登入資訊…",
 
 		StatusFillFields:      "請填寫所有欄位",
 		StatusAccountAdded:    "✅ 已新增帳號！\n\n正在啟動啟動器…\n請登入——工作階段會自動儲存！",
@@ -404,17 +402,15 @@ var translations = map[string]map[string]string{
 		AddAccountHelp:     "添加后启动器会自动启动。\n请登录——会话会自动保存！ ✅",
 		BtnAddAccount:      "添加账号并启动启动器",
 
-		EmptyStateTitle:       "尚无已保存的账号",
-		EmptyStateSubtitle:    "在上方添加你的第一个账号",
-		StatusAutoLogin:       "会话已保存",
-		StatusLoginReq:        "尚未保存会话（登录后自动保存）",
-		BtnSwitch:             "切换",
-		BtnReauthenticate:     "重新登录",
-		BtnDelete:             "删除",
-		ConfirmDelete:         "确定要删除此账号？",
-		ConfirmReauthenticate: "如果官方启动器已登录，会先保存当前会话；否则保留账号并重新登录。",
-		BtnYes:                "是",
-		BtnNo:                 "否",
+		EmptyStateTitle:    "尚无已保存的账号",
+		EmptyStateSubtitle: "在上方添加你的第一个账号",
+		StatusAutoLogin:    "会话已保存",
+		StatusLoginReq:     "尚未保存会话（登录后自动保存）",
+		BtnSwitch:          "切换",
+		BtnDelete:          "删除",
+		ConfirmDelete:      "确定要删除此账号？",
+		BtnYes:             "是",
+		BtnNo:              "否",
 
 		SettingsTitle:       "设置",
 		LabelLanguage:       "语言",
@@ -433,9 +429,10 @@ var translations = map[string]map[string]string{
 		SwitchAutoLogin:   "已载入保存的会话；如果会话已失效，启动器仍会要求登录。",
 		SwitchManualLogin: "请登录——会话会自动保存！",
 
-		TrayOpen:    "打开",
-		TrayQuit:    "退出",
-		TrayTooltip: "Tarkov Account Switcher {version}",
+		TrayOpen:              "打开",
+		TrayQuit:              "退出",
+		TrayTooltip:           "Tarkov Account Switcher {version}",
+		ShutdownSavingSession: "正在保存 Tarkov 启动器登录信息…",
 
 		StatusFillFields:      "请填写所有字段",
 		StatusAccountAdded:    "✅ 已添加账号！\n\n正在启动启动器…\n请登录——会话会自动保存！",
@@ -488,17 +485,15 @@ var translations = map[string]map[string]string{
 		AddAccountHelp:     "追加後、ランチャーが自動で起動します。\nログインするとセッションが自動保存されます！ ✅",
 		BtnAddAccount:      "アカウントを追加してランチャーを起動",
 
-		EmptyStateTitle:       "保存されたアカウントはありません",
-		EmptyStateSubtitle:    "上で最初のアカウントを追加してください",
-		StatusAutoLogin:       "セッション保存済み",
-		StatusLoginReq:        "セッション未保存（ログイン後に自動保存）",
-		BtnSwitch:             "切替",
-		BtnReauthenticate:     "再ログイン",
-		BtnDelete:             "削除",
-		ConfirmDelete:         "このアカウントを削除しますか？",
-		ConfirmReauthenticate: "公式ランチャーがログイン済みなら現在のセッションを保存し、そうでなければ保存済みセッションを消去して再ログインしますか？",
-		BtnYes:                "はい",
-		BtnNo:                 "いいえ",
+		EmptyStateTitle:    "保存されたアカウントはありません",
+		EmptyStateSubtitle: "上で最初のアカウントを追加してください",
+		StatusAutoLogin:    "セッション保存済み",
+		StatusLoginReq:     "セッション未保存（ログイン後に自動保存）",
+		BtnSwitch:          "切替",
+		BtnDelete:          "削除",
+		ConfirmDelete:      "このアカウントを削除しますか？",
+		BtnYes:             "はい",
+		BtnNo:              "いいえ",
 
 		SettingsTitle:       "設定",
 		LabelLanguage:       "言語",
@@ -517,9 +512,10 @@ var translations = map[string]map[string]string{
 		SwitchAutoLogin:   "保存済みセッションを読み込みました。期限切れの場合、ランチャーでログインが必要です。",
 		SwitchManualLogin: "ログインしてください — セッションは自動保存されます！",
 
-		TrayOpen:    "開く",
-		TrayQuit:    "終了",
-		TrayTooltip: "Tarkov Account Switcher {version}",
+		TrayOpen:              "開く",
+		TrayQuit:              "終了",
+		TrayTooltip:           "Tarkov Account Switcher {version}",
+		ShutdownSavingSession: "Tarkov ランチャーのログインを保存しています…",
 
 		StatusFillFields:      "すべての項目を入力してください",
 		StatusAccountAdded:    "✅ アカウントを追加しました！\n\nランチャーを起動中…\nログインするとセッションが自動保存されます！",
