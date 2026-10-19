@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"tarkov-account-switcher/internal/config"
 )
@@ -51,7 +52,14 @@ func UpdateLauncherAccount(email string) error {
 		return err
 	}
 
-	// Delete session files to force re-login
+	clearLauncherSessionFiles(launcherDataPath)
+
+	return nil
+}
+
+// clearLauncherSessionFiles removes separate launcher auth caches that may
+// override the credentials restored from the settings file.
+func clearLauncherSessionFiles(launcherDataPath string) {
 	sessionFiles := []string{
 		"user.json",
 		"session",
@@ -67,8 +75,6 @@ func UpdateLauncherAccount(email string) error {
 		filePath := filepath.Join(launcherDataPath, file)
 		os.Remove(filePath) // Ignore errors
 	}
-
-	return nil
 }
 
 // RestoreLauncherSession restores a saved launcher session
@@ -97,9 +103,23 @@ func RestoreLauncherSession(sessionData json.RawMessage) error {
 		}
 	}
 
-	// Restore auth-related fields AND selectedGame from saved session
-	// Preserve everything else (games, UI preferences) from current launcher state
+	clearLauncherSessionFiles(filepath.Dir(paths.LauncherSettingsPath))
+
+	// Clear known session fields even if an older saved session omitted one,
+	// so credentials from the currently active Steam account cannot leak in.
 	authFields := []string{"login", "at", "rt", "atet", "keepLoggedIn", "saveLogin", "selectedGame", "sysInfCheck"}
+	for _, field := range authFields {
+		delete(existingSettings, field)
+	}
+
+	// Launcher settings may gain auth fields in future versions. Remove unknown
+	// identity/credential fields while preserving game and UI preferences.
+	for field := range existingSettings {
+		if isLauncherAuthSetting(field) {
+			delete(existingSettings, field)
+		}
+	}
+
 	for _, field := range authFields {
 		if val, ok := savedSession[field]; ok {
 			existingSettings[field] = val
@@ -125,6 +145,20 @@ func RestoreLauncherSession(sessionData json.RawMessage) error {
 	}
 
 	return nil
+}
+
+func isLauncherAuthSetting(field string) bool {
+	key := strings.ToLower(field)
+	switch key {
+	case "at", "rt", "atet", "sysinfcheck":
+		return true
+	}
+	for _, marker := range []string{"auth", "token", "session", "credential", "identity", "steam", "password", "provider", "login", "account"} {
+		if strings.Contains(key, marker) {
+			return true
+		}
+	}
+	return key == "user" || strings.HasPrefix(key, "user_") || strings.HasSuffix(key, "_user")
 }
 
 // GetGameSettingsPath returns the path to the EFT Game.ini file
