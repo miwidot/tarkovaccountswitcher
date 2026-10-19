@@ -60,7 +60,6 @@ func (a *App) startup(ctx context.Context) {
 	accounts.SessionCapturedCallback = func(accountID string) {
 		wailsRuntime.EventsEmit(a.ctx, "session-captured", accountID)
 	}
-	accounts.StartSessionMonitor()
 
 	// Launcher started callback -> hide window
 	launcher.OnLauncherStarted = func() {

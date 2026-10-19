@@ -8,42 +8,43 @@ import (
 )
 
 var (
-	monitorOnce sync.Once
+	watchMu       sync.Mutex
+	watchDeadline time.Time
 
 	// SessionCapturedCallback is called when a session is captured
 	SessionCapturedCallback func(accountID string)
 )
 
-// StartSessionMonitor keeps saved sessions in sync with the launcher for as
-// long as the app runs. The launcher rewrites its settings file when it logs
-// in or refreshes an expired token at startup, and BSG invalidates the
-// previous refresh token at that moment: a session saved before is dead from
-// then on, and restoring it on the next switch would force a fresh login.
-// Every change is stored for the account matching the launcher's login.
-// Captures pause while another launcher installation (Steam) is running,
-// since it shares the settings file.
-func StartSessionMonitor() {
-	monitorOnce.Do(func() {
-		go func() {
-			var lastAT, lastRT string
-			for range time.Tick(2 * time.Second) {
-				if !launcher.IsOnlyConfiguredLauncherRunning() {
-					continue
-				}
-				launcherSettings, login, err := readLauncherAuth()
-				if err != nil || launcherSettings == nil {
-					continue
-				}
-				at, _ := launcherSettings["at"].(string)
-				rt, _ := launcherSettings["rt"].(string)
-				if at == lastAT && rt == lastRT {
-					continue
-				}
-				lastAT, lastRT = at, rt
-				if id := storeLauncherSession(launcherSettings, login); id != "" && SessionCapturedCallback != nil {
-					SessionCapturedCallback(id)
-				}
+// WatchLauncherSession stores session changes the launcher writes for the
+// next 5 minutes (e.g. the login after switching to an account without a
+// saved session). Calling it again extends the window. Kept short on purpose:
+// security software treats an app that keeps reading another program's login
+// tokens as a credential stealer. Captures pause while another launcher
+// installation (Steam) is running, since it shares the settings file.
+func WatchLauncherSession() {
+	watchMu.Lock()
+	defer watchMu.Unlock()
+	running := time.Now().Before(watchDeadline)
+	watchDeadline = time.Now().Add(5 * time.Minute)
+	if running {
+		return
+	}
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			watchMu.Lock()
+			expired := time.Now().After(watchDeadline)
+			watchMu.Unlock()
+			if expired {
+				return
 			}
-		}()
-	})
+			if !launcher.IsOnlyConfiguredLauncherRunning() {
+				continue
+			}
+			if id := captureLauncherSession(); id != "" && SessionCapturedCallback != nil {
+				SessionCapturedCallback(id)
+			}
+		}
+	}()
 }
