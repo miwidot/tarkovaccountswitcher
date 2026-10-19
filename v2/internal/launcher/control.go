@@ -82,6 +82,11 @@ func StartLauncher() error {
 	return nil
 }
 
+// IsLauncherRunning reports whether any BSG launcher process is running.
+func IsLauncherRunning() bool {
+	return len(launcherProcesses()) > 0
+}
+
 // IsOnlyConfiguredLauncherRunning reports whether all running BSG launcher
 // instances are from the configured installation. Steam and official installs
 // share the settings file, so session capture must pause if both are running.

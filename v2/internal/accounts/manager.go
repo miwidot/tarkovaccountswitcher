@@ -196,6 +196,7 @@ func AddAccount(name, email string) (string, error) {
 	if launcher.OnLauncherStarted != nil {
 		launcher.OnLauncherStarted()
 	}
+	WatchLauncherSession()
 
 	return newAccount.ID, nil
 }
@@ -233,9 +234,13 @@ func SaveSessionBeforeShutdown() {
 // rewrites the launcher settings file. Skips the capture if another launcher
 // installation (Steam) was running, since it shares the settings file.
 func closeLauncherSavingSession() {
-	onlyOurs := launcher.IsOnlyConfiguredLauncherRunning()
+	// With no launcher running, the file holds what the launcher last saved,
+	// which may be newer than the stored session (e.g. a token refresh when
+	// the user started the launcher directly). Capture it before a switch
+	// overwrites it.
+	capture := launcher.IsOnlyConfiguredLauncherRunning() || !launcher.IsLauncherRunning()
 	launcher.KillLauncher()
-	if onlyOurs {
+	if capture {
 		captureLauncherSession()
 	}
 }
@@ -384,6 +389,7 @@ func SwitchAccount(id string) *SwitchResult {
 		if launcher.OnLauncherStarted != nil {
 			launcher.OnLauncherStarted()
 		}
+		WatchLauncherSession()
 		return &SwitchResult{
 			Success:     true,
 			AccountName: account.Name,
@@ -403,6 +409,7 @@ func SwitchAccount(id string) *SwitchResult {
 	if launcher.OnLauncherStarted != nil {
 		launcher.OnLauncherStarted()
 	}
+	WatchLauncherSession()
 
 	return &SwitchResult{
 		Success:     true,

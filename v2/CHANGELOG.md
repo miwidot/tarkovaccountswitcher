@@ -3,7 +3,9 @@
 ## v2.1.1 (2026-10-19)
 
 ### Fixes
-- Some antivirus products (Norton) flagged v2.1.0. The launcher is no longer closed through the Windows Restart Manager, whose API is a common ransomware pattern; the app now sends the launcher's windows the same close-for-update messages directly. The behavior is unchanged: the launcher still exits and saves even when it hides in the tray.
+- Norton's behavioral protection flagged v2.1.0 as `IDP.Generic`. Two behaviors new in 2.1.0 are changed:
+  - The launcher's login file is no longer read continuously in the background. As in 2.0.7, the app only watches it for 5 minutes after you switch or add an account; on a switch it saves the launcher's latest login before restoring another one.
+  - The launcher is no longer closed through the Windows Restart Manager.
 
 ---
 
