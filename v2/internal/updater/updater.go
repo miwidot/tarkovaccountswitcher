@@ -10,7 +10,7 @@ import (
 )
 
 // CurrentVersion is the app version. Used everywhere instead of hardcoded strings.
-const CurrentVersion = "v2.1.2"
+const CurrentVersion = "v2.1.3"
 
 // UpdateInfo describes a single available update.
 type UpdateInfo struct {
@@ -26,10 +26,17 @@ type Result struct {
 }
 
 type ghRelease struct {
-	TagName    string `json:"tag_name"`
-	Prerelease bool   `json:"prerelease"`
-	Draft      bool   `json:"draft"`
-	HTMLURL    string `json:"html_url"`
+	TagName    string    `json:"tag_name"`
+	Prerelease bool      `json:"prerelease"`
+	Draft      bool      `json:"draft"`
+	HTMLURL    string    `json:"html_url"`
+	Assets     []ghAsset `json:"assets"`
+}
+
+type ghAsset struct {
+	Name        string `json:"name"`
+	DownloadURL string `json:"browser_download_url"`
+	Digest      string `json:"digest"` // "sha256:<hex>"
 }
 
 // CheckAsync runs an update check in a background goroutine.
@@ -47,28 +54,36 @@ func CheckAsync(cb func(Result)) {
 	}()
 }
 
-func check() (Result, error) {
+func fetchReleases() ([]ghRelease, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 
 	req, err := http.NewRequest("GET",
 		"https://api.github.com/repos/miwidot/tarkovaccountswitcher/releases", nil)
 	if err != nil {
-		return Result{}, err
+		return nil, err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return Result{}, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return Result{}, fmt.Errorf("github api: %d", resp.StatusCode)
+		return nil, fmt.Errorf("github api: %d", resp.StatusCode)
 	}
 
 	var releases []ghRelease
 	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
+		return nil, err
+	}
+	return releases, nil
+}
+
+func check() (Result, error) {
+	releases, err := fetchReleases()
+	if err != nil {
 		return Result{}, err
 	}
 

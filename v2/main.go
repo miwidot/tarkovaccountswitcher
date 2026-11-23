@@ -11,12 +11,17 @@ import (
 
 	"tarkov-account-switcher/internal/accounts"
 	"tarkov-account-switcher/internal/config"
+	"tarkov-account-switcher/internal/updater"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
+	// After an in-app update: wait for the replaced instance to exit before
+	// taking the single-instance lock below.
+	updater.FinishUpdate()
+
 	// Ensure data directory exists
 	if err := config.EnsureDataDir(); err != nil {
 		panic(err)

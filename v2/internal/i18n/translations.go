@@ -122,6 +122,9 @@ const (
 	UpdateAvailableStable = "updateAvailableStable"
 	UpdateAvailableBeta   = "updateAvailableBeta"
 	UpdateQuitHint        = "updateQuitHint"
+	BtnUpdateNow          = "btnUpdateNow"
+	StatusUpdating        = "statusUpdating"
+	StatusUpdateFailed    = "statusUpdateFailed"
 )
 
 var translations = map[string]map[string]string{
@@ -216,6 +219,9 @@ var translations = map[string]map[string]string{
 		UpdateAvailableStable: "Update verfügbar: {version} — {url}",
 		UpdateAvailableBeta:   "Neue Beta verfügbar: {version} — {url}",
 		UpdateQuitHint:        "Vor dem Start der neuen Version: Tray-Symbol → Beenden.",
+		BtnUpdateNow:          "Jetzt aktualisieren",
+		StatusUpdating:        "Update wird geladen und installiert …",
+		StatusUpdateFailed:    "Update fehlgeschlagen: {error}",
 	},
 	LangEN_US: {
 		// Tabs
@@ -308,6 +314,9 @@ var translations = map[string]map[string]string{
 		UpdateAvailableStable: "Update available: {version} — {url}",
 		UpdateAvailableBeta:   "Beta available: {version} — {url}",
 		UpdateQuitHint:        "Before starting the new version: tray icon → Quit.",
+		BtnUpdateNow:          "Update now",
+		StatusUpdating:        "Downloading and installing update…",
+		StatusUpdateFailed:    "Update failed: {error}",
 	},
 	LangZH_TW: {
 		TabAccounts: "📋 帳號",
@@ -392,6 +401,9 @@ var translations = map[string]map[string]string{
 		UpdateAvailableStable: "有可用更新：{version} — {url}",
 		UpdateAvailableBeta:   "有可用 Beta：{version} — {url}",
 		UpdateQuitHint:        "啟動新版本前：系統匣圖示 → 結束。",
+		BtnUpdateNow:          "立即更新",
+		StatusUpdating:        "正在下載並安裝更新…",
+		StatusUpdateFailed:    "更新失敗：{error}",
 	},
 	LangZH_CN: {
 		TabAccounts: "📋 账号",
@@ -476,6 +488,9 @@ var translations = map[string]map[string]string{
 		UpdateAvailableStable: "有可用更新：{version} — {url}",
 		UpdateAvailableBeta:   "有可用 Beta：{version} — {url}",
 		UpdateQuitHint:        "启动新版本前：托盘图标 → 退出。",
+		BtnUpdateNow:          "立即更新",
+		StatusUpdating:        "正在下载并安装更新…",
+		StatusUpdateFailed:    "更新失败：{error}",
 	},
 	LangJA_JP: {
 		TabAccounts: "📋 アカウント",
@@ -560,6 +575,9 @@ var translations = map[string]map[string]string{
 		UpdateAvailableStable: "アップデートあり: {version} — {url}",
 		UpdateAvailableBeta:   "新しいベータ: {version} — {url}",
 		UpdateQuitHint:        "新しいバージョンを起動する前に：トレイアイコン → 終了。",
+		BtnUpdateNow:          "今すぐ更新",
+		StatusUpdating:        "アップデートをダウンロードしてインストール中…",
+		StatusUpdateFailed:    "アップデートに失敗しました: {error}",
 	},
 }
 

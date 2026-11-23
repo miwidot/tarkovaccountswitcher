@@ -312,6 +312,7 @@ func (a *App) GetAllTranslations() map[string]string {
 		i18n.StatusAutoStartOn, i18n.StatusAutoStartOff, i18n.StatusStreamerOn, i18n.StatusStreamerOff,
 		i18n.AboutVersion, i18n.HtmlPageTitle, i18n.LinkDownload, i18n.FooterPoweredBy,
 		i18n.UpdateAvailableStable, i18n.UpdateAvailableBeta, i18n.UpdateQuitHint,
+		i18n.BtnUpdateNow, i18n.StatusUpdating, i18n.StatusUpdateFailed,
 	}
 	result := make(map[string]string, len(keys))
 	for _, k := range keys {
@@ -331,6 +332,19 @@ func (a *App) GetCurrentLanguage() string {
 func (a *App) QuitApp() {
 	stopTray()
 	wailsRuntime.Quit(a.ctx)
+}
+
+// InstallUpdate downloads and verifies the given release, replaces the exe and
+// restarts into it. On success the app quits, so the call doesn't return to JS.
+func (a *App) InstallUpdate(tag string) error {
+	if err := updater.Install(tag); err != nil {
+		return err
+	}
+	if err := updater.Restart(); err != nil {
+		return err
+	}
+	a.QuitApp()
+	return nil
 }
 
 // GetVersion returns the current app version

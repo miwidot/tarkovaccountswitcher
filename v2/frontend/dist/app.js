@@ -664,6 +664,10 @@ function setupWailsEvents() {
 
         const banner = document.getElementById('update-banner');
         let lines = [];
+        // Button that installs the given release in place (tag comes from GitHub).
+        const updateButton = (tag) => /^v?\d+\.\d+\.\d+[\w.-]*$/.test(tag)
+            ? ' <button class="update-btn" data-tag="' + escapeHtml(tag) + '">' + escapeHtml(t('btnUpdateNow')) + '</button>'
+            : '';
 
         if (data && data.stable) {
             const v = data.stable.Version || data.stable.version || '';
@@ -673,7 +677,7 @@ function setupWailsEvents() {
                 lines.push(tf('updateAvailableStable', {
                     version: v,
                     url: '<a href="' + href + '" target="_blank" rel="noopener noreferrer">' + dl + '</a>'
-                }));
+                }) + updateButton(v));
             }
         }
         if (data && data.beta) {
@@ -684,14 +688,28 @@ function setupWailsEvents() {
                 lines.push(tf('updateAvailableBeta', {
                     version: v,
                     url: '<a href="' + href + '" target="_blank" rel="noopener noreferrer">' + dl + '</a>'
-                }));
+                }) + updateButton(v));
             }
         }
 
         if (lines.length > 0) {
-            lines.push(escapeHtml(t('updateQuitHint')));
-            banner.innerHTML = lines.join('<br>');
+            const offer = lines.join('<br>');
+            // The hint only matters for a manual download.
+            banner.innerHTML = offer + '<br>' + escapeHtml(t('updateQuitHint'));
             banner.classList.remove('hidden');
+
+            banner.onclick = async (event) => {
+                const button = event.target.closest('.update-btn');
+                if (!button) return;
+                banner.textContent = t('statusUpdating');
+                try {
+                    // On success the app restarts and this never returns.
+                    await window.go.main.App.InstallUpdate(button.dataset.tag);
+                } catch (e) {
+                    banner.innerHTML = escapeHtml(tf('statusUpdateFailed', { error: String(e) })) +
+                        '<br>' + offer + '<br>' + escapeHtml(t('updateQuitHint'));
+                }
+            };
         }
     });
 }

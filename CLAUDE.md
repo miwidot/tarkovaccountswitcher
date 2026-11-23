@@ -49,6 +49,10 @@ internal/
   config/     Settings JSON, %APPDATA% paths, email masking (streamer mode), autostart registry key.
   i18n/       DE/EN translations. Language chosen from settings or system locale.
   updater/    GitHub Releases poller. CurrentVersion constant. Emits "update-available" event.
+              In-app update on request (install.go): download the release exe next to the running
+              one, check GitHub's SHA-256 and the Authenticode signer (signature.go, pinned to our
+              certificate subject), swap via rename, restart with --after-update <pid>.
+              FinishUpdate (called first in main) waits for the old instance and deletes "<exe>.old".
 ```
 
 **Go → JS communication:** `runtime.EventsEmit(ctx, "session-captured" | "update-available", ...)`. The frontend (`frontend/dist/app.js`) listens via the Wails JS runtime in `frontend/wailsjs/runtime`.
@@ -64,6 +68,7 @@ internal/
 - Windows-only: `taskkill`, Windows Mutex, Win32 tray, autostart via registry. Don't add cross-platform abstractions unless asked.
 - `HideWindowOnClose: true` — closing the window minimizes to tray; use `QuitApp()` / tray "Quit" to actually exit.
 - Releases are code-signed (Certum Open Source certificate, cloud key via SimplySign Desktop, which must be connected). `build_win10.bat` signs and verifies every build and fails if signing fails; never hand out an unsigned exe.
+- The in-app updater only accepts exes signed with the pinned certificate subject (`signerName` in `updater/signature.go`). If the certificate's subject ever changes, ship one release signed with the old certificate that knows the new name first.
 - Antivirus: Norton's behavioral protection flagged v2.1.0 as `IDP.Generic`. Don't add behavior that looks like a credential stealer or ransomware: no continuous background reading of the launcher's settings file (it holds login tokens), no Restart Manager API (`RmShutdown`), no DPAPI, no force-terminating other processes via the API.
 
 ## Frontend Notes

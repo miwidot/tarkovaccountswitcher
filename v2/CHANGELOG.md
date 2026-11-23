@@ -1,5 +1,16 @@
 # Changelog - Tarkov Account Switcher v2
 
+## v2.1.3 (2026-11-23)
+
+### New Features
+- **Update from inside the app.** When a newer release exists, the update banner now has an "Update now" button. It downloads the release, verifies it, replaces the exe and restarts the app. The manual download link stays.
+  - The download only comes from this repository's GitHub releases and is checked against the SHA-256 GitHub reports for it.
+  - The update must carry a valid code signature from our certificate ("Open Source Developer Martin Wilke"); anything else is rejected and nothing is replaced.
+  - The previous exe is kept as `<exe>.old` until the next start. If the app's folder isn't writable, the update fails with a message and you can still download manually.
+- Updates are never installed on their own: the app only checks at start and offers.
+
+---
+
 ## v2.1.2 (2026-11-23)
 
 ### Security
