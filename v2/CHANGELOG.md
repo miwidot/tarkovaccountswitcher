@@ -1,5 +1,30 @@
 # Changelog - Tarkov Account Switcher v2
 
+## v2.1.2 (2026-11-23)
+
+### Security
+- Built with Go 1.26.11 (was 1.26.2): fixes 20 known vulnerabilities in the standard library's HTTPS/TLS/certificate code, which the update check uses.
+- Wails 2.12.0 → 2.17.1 and `golang.org/x/sys` 0.30.0 → 0.50.0 (one advisory each, neither reachable from our code).
+
+### Fixes
+- The encryption key is never replaced when it merely can't be read (e.g. locked by a scanner). Previously that silently created a new key and made every saved login unreadable.
+- `accounts.json` and `settings.json` are written atomically, so a power loss mid-write (the app saves during Windows shutdown) can't corrupt them.
+- An unreadable launcher settings file is no longer overwritten with a near-empty one.
+- A switch checks the account and the launcher path before closing the running launcher.
+- Switching (and adding an account) now also clears the launcher's temp folder, so nothing cached for the previous account carries over.
+- The update banner reminds you to quit the old version from the tray before starting the new one.
+
+### Less work in the background
+- After a switch, the launcher's login file is only read when it actually changed (about 1-2 reads instead of ~150 in 5 minutes).
+- Waiting for the launcher to close no longer queries each launcher process every 100 ms.
+- Removed leftover code that tried to delete files named `token`, `auth`, `login`, `session` in the launcher folder; the launcher has no such files.
+
+### Build
+- `build_win10.bat` always code-signs the exe and fails if signing fails.
+- The exe's version info now includes `FileVersion`, `InternalName` and `OriginalFilename`.
+
+---
+
 ## v2.1.1 (2026-10-19)
 
 ### Fixes

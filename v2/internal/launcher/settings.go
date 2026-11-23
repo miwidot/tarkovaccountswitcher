@@ -2,6 +2,7 @@ package launcher
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -13,14 +14,10 @@ func UpdateLauncherAccount(email string) error {
 	paths := config.GetPaths()
 	launcherDataPath := filepath.Dir(paths.LauncherSettingsPath)
 
-	// Read existing settings or create new
-	var settings map[string]any
-
-	data, err := os.ReadFile(paths.LauncherSettingsPath)
-	if err == nil {
-		json.Unmarshal(data, &settings)
+	settings, err := readLauncherSettings()
+	if err != nil {
+		return err
 	}
-
 	if settings == nil {
 		settings = make(map[string]any)
 	}
@@ -47,28 +44,26 @@ func UpdateLauncherAccount(email string) error {
 		return err
 	}
 
-	if err := os.WriteFile(paths.LauncherSettingsPath, settingsData, 0644); err != nil {
-		return err
-	}
+	return os.WriteFile(paths.LauncherSettingsPath, settingsData, 0644)
+}
 
-	// Delete session files to force re-login
-	sessionFiles := []string{
-		"user.json",
-		"session",
-		"token",
-		".session",
-		"auth",
-		"auth.json",
-		"login",
-		"login.json",
+// readLauncherSettings reads the launcher settings file. It returns nil
+// without error if the file doesn't exist yet, and an error if it exists but
+// can't be read or parsed: writing it back then would wipe the launcher's own
+// settings (game paths, preferences).
+func readLauncherSettings() (map[string]any, error) {
+	data, err := os.ReadFile(config.GetPaths().LauncherSettingsPath)
+	if os.IsNotExist(err) {
+		return nil, nil
 	}
-
-	for _, file := range sessionFiles {
-		filePath := filepath.Join(launcherDataPath, file)
-		os.Remove(filePath) // Ignore errors
+	if err != nil {
+		return nil, err
 	}
-
-	return nil
+	var settings map[string]any
+	if err := json.Unmarshal(data, &settings); err != nil {
+		return nil, fmt.Errorf("launcher settings file is unreadable: %w", err)
+	}
+	return settings, nil
 }
 
 // RestoreLauncherSession restores a saved launcher session
@@ -82,11 +77,9 @@ func RestoreLauncherSession(sessionData json.RawMessage) error {
 	}
 
 	// Read existing launcher settings to preserve game state
-	var existingSettings map[string]any
-
-	data, err := os.ReadFile(paths.LauncherSettingsPath)
-	if err == nil {
-		json.Unmarshal(data, &existingSettings)
+	existingSettings, err := readLauncherSettings()
+	if err != nil {
+		return err
 	}
 
 	if existingSettings == nil {

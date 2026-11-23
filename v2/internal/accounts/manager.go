@@ -115,7 +115,7 @@ func saveLocked(accounts []Account) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(config.GetPaths().AccountsFile, data, 0644)
+	return config.WriteFileAtomic(config.GetPaths().AccountsFile, data, 0644)
 }
 
 // mutate runs the given function inside a locked load-modify-save cycle.
@@ -187,6 +187,7 @@ func AddAccount(name, email string) (string, error) {
 
 	// Launcher I/O happens outside the accounts lock.
 	closeLauncherSavingSession()
+	launcher.ClearGameCache()
 	if err := launcher.UpdateLauncherAccount(email); err != nil {
 		return "", err
 	}
@@ -355,25 +356,20 @@ func ReorderAccounts(orderedIDs []string) error {
 	})
 }
 
-// UpdateAccountSession stores a freshly captured session for an account.
-func UpdateAccountSession(id string, session json.RawMessage) error {
-	return mutate(func(accs []Account) ([]Account, error) {
-		for i := range accs {
-			if accs[i].ID == id {
-				accs[i].LauncherSession = session
-				accs[i].SessionCaptured = time.Now().Format(time.RFC3339)
-				break
-			}
-		}
-		return accs, nil
-	})
-}
-
 // SwitchAccount switches to the specified account.
 func SwitchAccount(id string) *SwitchResult {
+	// Check everything that can fail before closing the running launcher.
+	if account, err := GetAccountByID(id); err != nil || account == nil {
+		return &SwitchResult{Success: false, Error: i18n.T(i18n.ErrAccountNotFound)}
+	}
+	if err := launcher.CheckLauncherPath(); err != nil {
+		return &SwitchResult{Success: false, Error: err.Error()}
+	}
+
 	closeLauncherSavingSession()
 	launcher.ClearGameCache()
 
+	// Loaded after closing: that may just have stored a newer session.
 	account, err := GetAccountByID(id)
 	if err != nil || account == nil {
 		return &SwitchResult{Success: false, Error: i18n.T(i18n.ErrAccountNotFound)}

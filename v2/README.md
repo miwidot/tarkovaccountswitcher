@@ -167,4 +167,4 @@ v2/
 - **Go methods** exposed to JS via Wails auto-binding (`window.go.main.App.*`)
 - **Events** from Go to JS via `runtime.EventsEmit` (session-captured, update-available)
 - **Windows-specific** — Uses `taskkill` for process control, Windows Mutex
-- **No code signing** — Windows SmartScreen warnings expected on first run
+- **Code-signed** — Certum Open Source Code Signing certificate (Open Source Developer Martin Wilke)

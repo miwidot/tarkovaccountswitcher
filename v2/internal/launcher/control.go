@@ -29,8 +29,8 @@ func CloseLauncher(timeout time.Duration) bool {
 	// Only the main processes are asked to close: the CEF subprocesses share
 	// the exe name and exit with them.
 	var mainPIDs []uint32
-	for pid, p := range procs {
-		if _, isChild := procs[p.parentPID]; !isChild {
+	for pid, parentPID := range procs {
+		if _, isChild := procs[parentPID]; !isChild {
 			mainPIDs = append(mainPIDs, pid)
 		}
 	}
@@ -55,7 +55,7 @@ func KillLauncher() error {
 func waitForLauncherExit(timeout time.Duration) bool {
 	deadline := time.Now().Add(timeout)
 	for {
-		if len(launcherProcesses()) == 0 {
+		if !IsLauncherRunning() {
 			return true
 		}
 		if time.Now().After(deadline) {
@@ -65,16 +65,19 @@ func waitForLauncherExit(timeout time.Duration) bool {
 	}
 }
 
+// CheckLauncherPath reports whether the configured launcher executable exists.
+func CheckLauncherPath() error {
+	_, err := os.Stat(config.GetSettings().LauncherPath)
+	return err
+}
+
 // StartLauncher starts the BSG Launcher
 func StartLauncher() error {
-	settings := config.GetSettings()
-	launcherPath := settings.LauncherPath
-
-	if _, err := os.Stat(launcherPath); err != nil {
+	if err := CheckLauncherPath(); err != nil {
 		return err
 	}
 
-	cmd := exec.Command(launcherPath)
+	cmd := exec.Command(config.GetSettings().LauncherPath)
 	if err := cmd.Start(); err != nil {
 		return err
 	}
@@ -96,37 +99,30 @@ func IsOnlyConfiguredLauncherRunning() bool {
 		return false
 	}
 	want := filepath.Clean(config.GetSettings().LauncherPath)
-	for _, p := range procs {
-		if p.path == "" || !strings.EqualFold(filepath.Clean(p.path), want) {
+	for pid := range procs {
+		path := processImagePath(pid)
+		if path == "" || !strings.EqualFold(filepath.Clean(path), want) {
 			return false
 		}
 	}
 	return true
 }
 
-type launcherProcess struct {
-	path      string // "" if it couldn't be queried
-	parentPID uint32
-}
-
-// launcherProcesses returns every running BsgLauncher.exe keyed by PID.
-// The launcher's CEF subprocesses run under the same exe name.
-func launcherProcesses() map[uint32]launcherProcess {
+// launcherProcesses returns the parent PID of every running BsgLauncher.exe
+// keyed by PID. The launcher's CEF subprocesses run under the same exe name.
+func launcherProcesses() map[uint32]uint32 {
 	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, 0)
 	if err != nil {
 		return nil
 	}
 	defer windows.CloseHandle(snap)
 
-	procs := make(map[uint32]launcherProcess)
+	procs := make(map[uint32]uint32)
 	var entry windows.ProcessEntry32
 	entry.Size = uint32(unsafe.Sizeof(entry))
 	for err = windows.Process32First(snap, &entry); err == nil; err = windows.Process32Next(snap, &entry) {
 		if strings.EqualFold(windows.UTF16ToString(entry.ExeFile[:]), launcherExe) {
-			procs[entry.ProcessID] = launcherProcess{
-				path:      processImagePath(entry.ProcessID),
-				parentPID: entry.ParentProcessID,
-			}
+			procs[entry.ProcessID] = entry.ParentProcessID
 		}
 	}
 	return procs
@@ -158,11 +154,13 @@ func hiddenCommand(name string, args ...string) *exec.Cmd {
 // OnLauncherStarted is called after launcher starts - set by UI to minimize window
 var OnLauncherStarted func()
 
-// ClearGameCache clears EFT/Arena cache files to force fresh data from server
-// This does NOT delete our saved account sessions - only game cache
+// ClearGameCache clears EFT/Arena and launcher cache files, so nothing cached
+// for the previous account carries over to the next one.
+// This does NOT delete our saved account sessions - only caches.
 func ClearGameCache() {
 	tempDir := os.TempDir()
 	localAppData := os.Getenv("LOCALAPPDATA")
+	paths := config.GetPaths()
 
 	settings := config.GetSettings()
 	launcherDir := filepath.Dir(settings.LauncherPath)
@@ -172,9 +170,12 @@ func ClearGameCache() {
 		filepath.Join(tempDir, "Battlestate Games", "EscapeFromTarkovArena"),
 		filepath.Join(localAppData, "Battlestate Games", "BsgLauncher", "CefCache", "Cache"),
 		filepath.Join(launcherDir, "Temp"),
+		// The launcher's temp folder: its settings point here (tempFolder).
+		paths.TempFolder,
 	}
 
 	for _, dir := range cacheDirs {
 		os.RemoveAll(dir)
 	}
+	os.MkdirAll(paths.TempFolder, 0755)
 }

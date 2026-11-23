@@ -689,6 +689,7 @@ function setupWailsEvents() {
         }
 
         if (lines.length > 0) {
+            lines.push(escapeHtml(t('updateQuitHint')));
             banner.innerHTML = lines.join('<br>');
             banner.classList.remove('hidden');
         }

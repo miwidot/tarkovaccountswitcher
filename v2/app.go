@@ -311,7 +311,7 @@ func (a *App) GetAllTranslations() map[string]string {
 		i18n.StatusError, i18n.StatusDeleteFailed,
 		i18n.StatusAutoStartOn, i18n.StatusAutoStartOff, i18n.StatusStreamerOn, i18n.StatusStreamerOff,
 		i18n.AboutVersion, i18n.HtmlPageTitle, i18n.LinkDownload, i18n.FooterPoweredBy,
-		i18n.UpdateAvailableStable, i18n.UpdateAvailableBeta,
+		i18n.UpdateAvailableStable, i18n.UpdateAvailableBeta, i18n.UpdateQuitHint,
 	}
 	result := make(map[string]string, len(keys))
 	for _, k := range keys {

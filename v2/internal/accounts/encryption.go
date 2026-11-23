@@ -23,11 +23,23 @@ var (
 func GetOrCreateKey() ([]byte, error) {
 	keyOnce.Do(func() {
 		paths := config.GetPaths()
-		if key, err := os.ReadFile(paths.KeyFile); err == nil && len(key) == 32 {
+		key, err := os.ReadFile(paths.KeyFile)
+		if err == nil && len(key) == 32 {
 			encryptionKey = key
 			return
 		}
-		key := make([]byte, 32)
+		// Only create a key when none exists. Replacing a key that merely
+		// couldn't be read (e.g. locked by a scanner) would make every saved
+		// session undecryptable.
+		if err == nil {
+			keyErr = errors.New("encryption key file is damaged")
+			return
+		}
+		if !os.IsNotExist(err) {
+			keyErr = err
+			return
+		}
+		key = make([]byte, 32)
 		if _, err := rand.Read(key); err != nil {
 			keyErr = err
 			return
