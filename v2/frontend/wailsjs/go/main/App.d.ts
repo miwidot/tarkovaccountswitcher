@@ -20,6 +20,8 @@ export function GetSettings():Promise<main.SettingsDTO>;
 
 export function GetVersion():Promise<string>;
 
+export function InstallUpdate(arg1:string):Promise<void>;
+
 export function QuitApp():Promise<void>;
 
 export function ReorderAccounts(arg1:Array<string>):Promise<void>;
