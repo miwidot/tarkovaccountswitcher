@@ -121,6 +121,7 @@ const (
 	// Update Notifications
 	UpdateAvailableStable = "updateAvailableStable"
 	UpdateAvailableBeta   = "updateAvailableBeta"
+	UpdateQuitHint        = "updateQuitHint"
 )
 
 var translations = map[string]map[string]string{
@@ -214,6 +215,7 @@ var translations = map[string]map[string]string{
 		// Update Notifications
 		UpdateAvailableStable: "Update verfügbar: {version} — {url}",
 		UpdateAvailableBeta:   "Neue Beta verfügbar: {version} — {url}",
+		UpdateQuitHint:        "Vor dem Start der neuen Version: Tray-Symbol → Beenden.",
 	},
 	LangEN_US: {
 		// Tabs
@@ -305,6 +307,7 @@ var translations = map[string]map[string]string{
 		// Update Notifications
 		UpdateAvailableStable: "Update available: {version} — {url}",
 		UpdateAvailableBeta:   "Beta available: {version} — {url}",
+		UpdateQuitHint:        "Before starting the new version: tray icon → Quit.",
 	},
 	LangZH_TW: {
 		TabAccounts: "📋 帳號",
@@ -388,6 +391,7 @@ var translations = map[string]map[string]string{
 
 		UpdateAvailableStable: "有可用更新：{version} — {url}",
 		UpdateAvailableBeta:   "有可用 Beta：{version} — {url}",
+		UpdateQuitHint:        "啟動新版本前：系統匣圖示 → 結束。",
 	},
 	LangZH_CN: {
 		TabAccounts: "📋 账号",
@@ -471,6 +475,7 @@ var translations = map[string]map[string]string{
 
 		UpdateAvailableStable: "有可用更新：{version} — {url}",
 		UpdateAvailableBeta:   "有可用 Beta：{version} — {url}",
+		UpdateQuitHint:        "启动新版本前：托盘图标 → 退出。",
 	},
 	LangJA_JP: {
 		TabAccounts: "📋 アカウント",
@@ -554,6 +559,7 @@ var translations = map[string]map[string]string{
 
 		UpdateAvailableStable: "アップデートあり: {version} — {url}",
 		UpdateAvailableBeta:   "新しいベータ: {version} — {url}",
+		UpdateQuitHint:        "新しいバージョンを起動する前に：トレイアイコン → 終了。",
 	},
 }
 

@@ -17,11 +17,12 @@ wails dev                                  # hot-reload dev mode
 wails build -platform windows/amd64        # release build → v2/build/bin/Tarkov Account Switcher.exe
 go mod tidy                                # resolve dependencies
 go run sync_version.go                     # sync productVersion in wails.json from updater.go (run before a release build)
+..\build_win10.bat                         # release build: tidy, sync version, build, code-sign (run from repo root)
 ```
 
 No test or lint scripts. No frontend build step — `frontend/dist/` is vanilla HTML/CSS/JS, served directly.
 
-**Build prerequisites:** Go 1.23+ (toolchain pinned to 1.26.2), Wails CLI v2 (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`), and MinGW-w64 GCC in PATH (Wails needs CGO).
+**Build prerequisites:** Go 1.26+ (toolchain pinned to 1.26.11), Wails CLI v2 (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`), and MinGW-w64 GCC in PATH (Wails needs CGO).
 
 ## Versioning
 
@@ -37,14 +38,17 @@ tray_windows.go  Native Win32 Shell_NotifyIconW tray on its own goroutine (no tr
                  Also sets the window icon via Win32 (reliable regardless of build path).
 
 internal/
-  accounts/   CRUD, AES-256-CBC (random IV, PKCS7), 2s polling watcher w/ 5min timeout.
+  accounts/   CRUD, AES-256-CBC (random IV, PKCS7). Watches the launcher settings file for
+              5 min after a switch/add (2s poll, reads only when the file changed).
               SessionCapturedCallback fires on capture → emits "session-captured" event to JS.
-  launcher/   taskkill/start BSG launcher, settings file read/write, cache clearing.
+              SaveSessionBeforeShutdown runs on WM_QUERYENDSESSION (wired through the tray).
+  launcher/   Close (WM_QUERYENDSESSION/WM_ENDSESSION to its windows, taskkill as fallback) and
+              start the BSG launcher, settings file read/write, cache clearing.
+              The launcher only writes refreshed tokens on a clean exit, so never force-kill first.
               OnLauncherStarted callback → app hides window to tray.
   config/     Settings JSON, %APPDATA% paths, email masking (streamer mode), autostart registry key.
   i18n/       DE/EN translations. Language chosen from settings or system locale.
   updater/    GitHub Releases poller. CurrentVersion constant. Emits "update-available" event.
-  singleinstance/  Windows mutex (fallback beside Wails' built-in SingleInstanceLock).
 ```
 
 **Go → JS communication:** `runtime.EventsEmit(ctx, "session-captured" | "update-available", ...)`. The frontend (`frontend/dist/app.js`) listens via the Wails JS runtime in `frontend/wailsjs/runtime`.
@@ -59,7 +63,8 @@ internal/
 - Launcher settings read/written at `%APPDATA%\Battlestate Games\BsgLauncher\settings`.
 - Windows-only: `taskkill`, Windows Mutex, Win32 tray, autostart via registry. Don't add cross-platform abstractions unless asked.
 - `HideWindowOnClose: true` — closing the window minimizes to tray; use `QuitApp()` / tray "Quit" to actually exit.
-- No code signing → SmartScreen warnings on install are expected.
+- Releases are code-signed (Certum Open Source certificate, cloud key via SimplySign Desktop, which must be connected). `build_win10.bat` signs and verifies every build and fails if signing fails; never hand out an unsigned exe.
+- Antivirus: Norton's behavioral protection flagged v2.1.0 as `IDP.Generic`. Don't add behavior that looks like a credential stealer or ransomware: no continuous background reading of the launcher's settings file (it holds login tokens), no Restart Manager API (`RmShutdown`), no DPAPI, no force-terminating other processes via the API.
 
 ## Frontend Notes
 

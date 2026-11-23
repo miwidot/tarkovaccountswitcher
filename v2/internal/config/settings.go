@@ -64,6 +64,21 @@ func EnsureDataDir() error {
 	return os.MkdirAll(paths.TempFolder, 0755)
 }
 
+// WriteFileAtomic writes data to a temporary file next to path and renames it
+// over path, so a crash or power loss mid-write (the app writes during
+// Windows shutdown) can't leave a truncated file behind.
+func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, data, perm); err != nil {
+		return err
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		os.Remove(tmp)
+		return err
+	}
+	return nil
+}
+
 // loadLocked returns the cached settings, populating from disk on first call.
 // Caller must hold settingsMu.
 func loadLocked() *Settings {
@@ -85,7 +100,7 @@ func writeLocked() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(GetPaths().SettingsFile, data, 0644)
+	return WriteFileAtomic(GetPaths().SettingsFile, data, 0644)
 }
 
 // update mutates the cached settings under lock and persists the result.

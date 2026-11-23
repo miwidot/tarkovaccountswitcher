@@ -81,6 +81,9 @@ func writeWindowsInfoJSON(version string) {
   "info": {
     "0409": {
       "ProductVersion": "%[1]s.0",
+      "FileVersion": "%[1]s.0",
+      "InternalName": "Tarkov Account Switcher",
+      "OriginalFilename": "Tarkov Account Switcher.exe",
       "CompanyName": "Tarkov-Stammtisch.de",
       "FileDescription": "Tarkov Account Switcher",
       "LegalCopyright": "Tarkov-Stammtisch.de",

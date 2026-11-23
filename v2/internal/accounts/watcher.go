@@ -1,9 +1,11 @@
 package accounts
 
 import (
+	"os"
 	"sync"
 	"time"
 
+	"tarkov-account-switcher/internal/config"
 	"tarkov-account-switcher/internal/launcher"
 )
 
@@ -32,6 +34,8 @@ func WatchLauncherSession() {
 	go func() {
 		ticker := time.NewTicker(2 * time.Second)
 		defer ticker.Stop()
+		// The token file is only read after its timestamp changed.
+		var lastMod time.Time
 		for range ticker.C {
 			watchMu.Lock()
 			expired := time.Now().After(watchDeadline)
@@ -39,9 +43,14 @@ func WatchLauncherSession() {
 			if expired {
 				return
 			}
+			info, err := os.Stat(config.GetPaths().LauncherSettingsPath)
+			if err != nil || info.ModTime().Equal(lastMod) {
+				continue
+			}
 			if !launcher.IsOnlyConfiguredLauncherRunning() {
 				continue
 			}
+			lastMod = info.ModTime()
 			if id := captureLauncherSession(); id != "" && SessionCapturedCallback != nil {
 				SessionCapturedCallback(id)
 			}
